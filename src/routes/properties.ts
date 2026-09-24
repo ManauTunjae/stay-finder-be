@@ -41,4 +41,8 @@ const dummyProperties: Property[] = [
   },
 ];
 
+properties.get('/', (c) => {
+    return c.json(dummyProperties);
+})
+
 export default properties;
