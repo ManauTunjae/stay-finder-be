@@ -47,12 +47,10 @@ properties.get("/", (c) => {
 
 properties.get("/:id", (c) => {
   const propertyId = c.req.param("id");
-  const property = dummyProperties.find(
-    (property) => property.property_id === propertyId,
-  );
+  const property = dummyProperties.find((p) => p.property_id === propertyId);
 
   if (!property) {
-    return c.json({ error: "Property not fount" }, 404);
+    return c.json({ error: "Property not found" }, 404);
   }
   return c.json(property);
 });
