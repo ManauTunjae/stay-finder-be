@@ -55,4 +55,15 @@ properties.get("/:id", (c) => {
   return c.json(property);
 });
 
+properties.post('/', async (c) => {
+  const propertyBody = await c.req.json<Omit<Property, "property_id">>();
+
+  const property: Property = {
+    ...propertyBody,
+    property_id: `property_${1000 + dummyProperties.length + 1}`,
+  }
+  dummyProperties.push(property);
+  return c.json(property, 201)
+})
+
 export default properties;
