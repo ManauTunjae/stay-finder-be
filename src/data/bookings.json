@@ -38,5 +38,25 @@
     "check_out": "2026-10-02",
     "guests": 1,
     "status": "cancelled"
+  },
+  {
+    "property_id": "property_1003",
+    "guest_name": "Lina Berg",
+    "guest_email": "lina.berg@example.com",
+    "check_in": "2026-11-20",
+    "check_out": "2026-11-23",
+    "guests": 4,
+    "status": "pending",
+    "booking_id": "booking_5"
+  },
+  {
+    "property_id": "property_1005",
+    "guest_name": "Manau Tunjae",
+    "guest_email": "manau.tunjae@example.com",
+    "check_in": "2026-11-20",
+    "check_out": "2026-11-23",
+    "guests": 2,
+    "status": "pending",
+    "booking_id": "booking_6"
   }
 ]
