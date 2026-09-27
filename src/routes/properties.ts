@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import fs from "fs/promises";
 
 const properties = new Hono();
 
@@ -41,6 +42,19 @@ const dummyProperties: Property[] = [
   },
 ];
 
+async function getProperties(): Promise<Property[]> {
+  try {
+    const data = await fs.readFile("src/data/properties.json", {
+      encoding: "utf8",
+    });
+    const properties: Property[] = JSON.parse(data);
+    return properties;
+  } catch (e) {
+    console.warn("Error getting propertoes from json", e);
+    return [];
+  }
+}
+
 properties.get("/", (c) => {
   return c.json(dummyProperties);
 });
@@ -55,15 +69,15 @@ properties.get("/:id", (c) => {
   return c.json(property);
 });
 
-properties.post('/', async (c) => {
+properties.post("/", async (c) => {
   const propertyBody = await c.req.json<Omit<Property, "property_id">>();
 
   const property: Property = {
     ...propertyBody,
     property_id: `property_${1000 + dummyProperties.length + 1}`,
-  }
+  };
   dummyProperties.push(property);
-  return c.json(property, 201)
-})
+  return c.json(property, 201);
+});
 
 export default properties;
