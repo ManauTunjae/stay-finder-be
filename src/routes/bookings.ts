@@ -69,4 +69,28 @@ bookings.post("/", bookingValidator, async (c) => {
   return c.json(booking, 201);
 });
 
+bookings.patch("/:id", bookingOptionalValidator, async (c) => {
+  const allBookings = await getBookings();
+  const bookingId = c.req.param("id");
+
+  const bookingIndex = allBookings.findIndex((b) => b.booking_id === bookingId);
+
+  if (bookingIndex === -1) {
+    return c.json({ error: "Booking not found" }, 404);
+  }
+  const bookingBody: Partial<Booking> = c.req.valid("json");
+
+  allBookings[bookingIndex] = {
+    ...allBookings[bookingIndex],
+    ...bookingBody,
+    booking_id: allBookings[bookingIndex].booking_id,
+  };
+  try {
+    await saveBookings(allBookings);
+  } catch (error) {
+    return c.json({ error: "Could not update booking" }, 500);
+  }
+  return c.json(allBookings[bookingIndex]);
+});
+
 export default bookings;
