@@ -64,7 +64,7 @@ async function saveProperties(properties: Property[]): Promise<void> {
     return;
   } catch (e) {
     console.warn("Error writing to json file", e);
-    throw Error("Error writing properties to json file", e);
+    throw Error("Error writing properties to json file");
   }
 }
 
