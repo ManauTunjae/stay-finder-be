@@ -60,9 +60,10 @@ properties.get("/", async (c) => {
   return c.json(properties);
 });
 
-properties.get("/:id", (c) => {
+properties.get("/:id", async (c) => {
+  const properties = await getProperties();
   const propertyId = c.req.param("id");
-  const property = dummyProperties.find((p) => p.property_id === propertyId);
+  const property = properties.find((p) => p.property_id === propertyId);
 
   if (!property) {
     return c.json({ error: "Property not found" }, 404);
