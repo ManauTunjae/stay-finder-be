@@ -19,4 +19,40 @@ const bookingSchema = bookingBaseSchema.refine(
   },
 );
 
-const bookingOptionalSchema = bookingBaseSchema.partial();
+const bookingOptionalSchema = bookingBaseSchema.partial().extend({
+  status: z.enum(["pending", "confirmed", "cancelled"]).optional(),
+});
+
+export const bookingValidator = zValidator(
+  "json",
+  bookingSchema,
+  (result, c) => {
+    if (!result.success) {
+      return c.json(
+        {
+          error: result.error.issues.map((issue) => {
+            return [issue.path.join(", "), issue.message];
+          }),
+        },
+        400,
+      );
+    }
+  },
+);
+
+export const bookingOptionalValidator = zValidator(
+  "json",
+  bookingOptionalSchema,
+  (result, c) => {
+    if (!result.success) {
+      return c.json(
+        {
+          error: result.error.issues.map((issue) => {
+            return [issue.path.join(", "), issue.message];
+          }),
+        },
+        400,
+      );
+    }
+  },
+);
