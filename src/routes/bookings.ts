@@ -16,4 +16,9 @@ async function getBookings(): Promise<Booking[]> {
   }
 }
 
+bookings.get("/", async (c) => {
+  const allBookings = await getBookings();
+  return c.json(allBookings);
+});
+
 export default bookings;
