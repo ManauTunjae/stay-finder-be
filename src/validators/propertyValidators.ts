@@ -11,3 +11,22 @@ const propertySchema = z.object({
   location: z.string().min(2, "Location is neccesary"),
   property_id: z.string().optional(),
 });
+
+const propertyOptionalSchema = propertySchema.partial();
+
+export const propertyValidators = zValidator(
+  "json",
+  propertySchema,
+  (result, c) => {
+    if (!result.success) {
+      return c.json(
+        {
+          error: result.error.issues.map((issue) => {
+            return [issue.path.join(","), issue.message];
+          }),
+        },
+        400,
+      );
+    }
+  },
+);
