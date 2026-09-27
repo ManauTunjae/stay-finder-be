@@ -6,3 +6,5 @@ interface Property {
     price_per_night: number;
     max_guests: number;
 }
+
+type NewProperty = Omit<Property, "property_id">;
