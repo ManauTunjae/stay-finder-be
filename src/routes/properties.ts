@@ -5,7 +5,7 @@ import {
   propertyValidator,
 } from "../validators/propertyValidators.js";
 
-const properties = new Hono();
+const properties = new Hono({ strict: false});
 
 async function getProperties(): Promise<Property[]> {
   try {
@@ -49,8 +49,8 @@ properties.get("/:id", async (c) => {
   return c.json(property);
 });
 
-properties.post("/", async (c) => {
-  const propertyBody = await c.req.json<Property>();
+properties.post("/", propertyValidator, async (c) => {
+  const propertyBody: NewProperty = c.req.valid("json");
   const allProperties = await getProperties();
   const property: Property = {
     ...propertyBody,
