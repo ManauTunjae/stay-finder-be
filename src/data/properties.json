@@ -30,5 +30,13 @@
     "location": "Malmö, Sweden",
     "price_per_night": 950,
     "max_guests": 3
+  },
+  {
+    "title": "Katrineholm Inn",
+    "description": "A bright and cozy studio apartment close to cafés, parks and public transport.",
+    "max_guests": 2,
+    "price_per_night": 900,
+    "location": "Katrineholm, Sweden",
+    "property_id": "property_1005"
   }
 ]
