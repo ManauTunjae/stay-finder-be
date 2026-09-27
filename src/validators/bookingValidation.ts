@@ -18,3 +18,5 @@ const bookingSchema = bookingBaseSchema.refine(
     path: ["check_out"],
   },
 );
+
+const bookingOptionalSchema = bookingBaseSchema.partial();
