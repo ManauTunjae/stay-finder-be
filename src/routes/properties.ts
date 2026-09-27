@@ -1,5 +1,9 @@
 import { Hono } from "hono";
 import fs from "fs/promises";
+import {
+  propertyOptionalValidator,
+  propertyValidator,
+} from "../validators/propertyValidators.js";
 
 const properties = new Hono();
 

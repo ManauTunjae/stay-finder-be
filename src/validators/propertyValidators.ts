@@ -14,7 +14,7 @@ const propertySchema = z.object({
 
 const propertyOptionalSchema = propertySchema.partial();
 
-export const propertyValidators = zValidator(
+export const propertyValidator = zValidator(
   "json",
   propertySchema,
   (result, c) => {
