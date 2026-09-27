@@ -4,6 +4,7 @@ import {
   bookingValidator,
   bookingOptionalValidator,
 } from "../validators/bookingValidation.js";
+import { preprocess } from "zod";
 
 const bookings = new Hono({ strict: false });
 
@@ -47,6 +48,25 @@ bookings.get("/:id", async (c) => {
     return c.json({ error: "Booking not found" }, 404);
   }
   return c.json(booking);
+});
+
+bookings.post("/", bookingValidator, async (c) => {
+  const allBookings = await getBookings();
+  const bookingBody = c.req.valid("json");
+
+  const booking: Booking = {
+    ...bookingBody,
+    booking_id: `booking_${allBookings.length + 1}`,
+  };
+
+  allBookings.push(booking);
+
+  try {
+    await saveBookings(allBookings);
+  } catch (error) {
+    return c.json({ error: "Could not save booking" }, 500);
+  }
+  return c.json(booking, 201);
 });
 
 export default bookings;
