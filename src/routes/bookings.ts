@@ -1,5 +1,9 @@
 import { Hono } from "hono";
 import fs from "fs/promises";
+import {
+  bookingValidator,
+  bookingOptionalValidator,
+} from "../validators/bookingValidation.js";
 
 const bookings = new Hono({ strict: false });
 
