@@ -32,11 +32,11 @@
     "max_guests": 3
   },
   {
-    "title": "Katrineholm Inn",
-    "description": "A bright and cozy studio apartment close to cafés, parks and public transport.",
+    "title": "Kungshotel Katrineholm",
+    "description": "Katrineholm boende som är prisvärd och mysigt nära stationen.",
     "max_guests": 2,
-    "price_per_night": 900,
-    "location": "Katrineholm, Sweden",
+    "price_per_night": 3000,
+    "location": "Stockholm, Sweden",
     "property_id": "property_1005"
   }
 ]

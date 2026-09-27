@@ -4,8 +4,9 @@ import {
   propertyOptionalValidator,
   propertyValidator,
 } from "../validators/propertyValidators.js";
+import { preprocess } from "zod";
 
-const properties = new Hono({ strict: false});
+const properties = new Hono({ strict: false });
 
 async function getProperties(): Promise<Property[]> {
   try {
@@ -27,8 +28,8 @@ async function saveProperties(properties: Property[]): Promise<void> {
       encoding: "utf-8",
     });
     return;
-  } catch (e) {
-    console.warn("Error writing to json file", e);
+  } catch (error) {
+    console.warn("Error writing to json file", error);
     throw Error("Error writing properties to json file");
   }
 }
@@ -59,10 +60,37 @@ properties.post("/", propertyValidator, async (c) => {
   allProperties.push(property);
   try {
     await saveProperties(allProperties);
-  } catch (e) {
-    return c.json({ e: "Could not save property" }, 500);
+  } catch (error) {
+    return c.json({ error: "Could not save property" }, 500);
   }
   return c.json(property, 201);
+});
+
+properties.patch("/:id", propertyOptionalValidator, async (c) => {
+  const propertyId = c.req.param("id");
+  const allProperties = await getProperties();
+
+  const propertyIndex = allProperties.findIndex(
+    (p) => p.property_id === propertyId,
+  );
+
+  if (propertyIndex === -1) {
+    return c.json({ error: "Property not found" }, 404);
+  }
+
+  const propertyBody: Partial<Property> = c.req.valid("json");
+
+  allProperties[propertyIndex] = {
+    ...allProperties[propertyIndex],
+    ...propertyBody,
+    property_id: allProperties[propertyIndex].property_id,
+  };
+  try {
+    await saveProperties(allProperties);
+  } catch (error) {
+    return c.json({ error: "Could not update property" }, 500);
+  }
+  return c.json(allProperties[propertyIndex]);
 });
 
 export default properties;
