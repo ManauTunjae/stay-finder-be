@@ -93,4 +93,24 @@ bookings.patch("/:id", bookingOptionalValidator, async (c) => {
   return c.json(allBookings[bookingIndex]);
 });
 
+bookings.delete("/:id", async (c) => {
+  const allbookings = await getBookings();
+  const bookingId = c.req.param("id");
+
+  const bookingIndex = allbookings.findIndex((b) => b.booking_id === bookingId);
+
+  if (bookingIndex === -1) {
+    return c.json({ error: "Booking not found" }, 404);
+  }
+
+  allbookings.splice(bookingIndex, 1);
+
+  try {
+    await saveBookings(allbookings);
+  } catch (error) {
+    return c.json({ error: "Could not delete booking" }, 500);
+  }
+  return c.json({ message: "Booking is deleted" }, 200);
+});
+
 export default bookings;
