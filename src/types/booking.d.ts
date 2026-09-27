@@ -1,5 +1,4 @@
 interface NewBooking {
-  booking_id?: string;
   property_id: string;
   guest_name: string;
   guest_email: string;
