@@ -52,10 +52,10 @@
   {
     "property_id": "property_1005",
     "guest_name": "Manau Tunjae",
-    "guest_email": "manau.tunjae@example.com",
+    "guest_email": "manau.tunjae@hotmail.com",
     "check_in": "2026-11-20",
     "check_out": "2026-11-23",
-    "guests": 2,
+    "guests": 6,
     "status": "pending",
     "booking_id": "booking_6"
   }
