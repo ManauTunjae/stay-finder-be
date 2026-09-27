@@ -16,6 +16,19 @@ async function getBookings(): Promise<Booking[]> {
   }
 }
 
+async function saveBookings(bookings: Booking[]): Promise<void> {
+  try {
+    const data = JSON.stringify(bookings, null, 2);
+    await fs.writeFile("src/data/bookings.json", data, {
+      encoding: "utf-8",
+    });
+    return;
+  } catch (error) {
+    console.warn("Error writing to json file", error);
+    throw Error("Error writing bookings to json file");
+  }
+}
+
 bookings.get("/", async (c) => {
   const allBookings = await getBookings();
   return c.json(allBookings);
