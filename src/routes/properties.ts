@@ -55,8 +55,9 @@ async function getProperties(): Promise<Property[]> {
   }
 }
 
-properties.get("/", (c) => {
-  return c.json(dummyProperties);
+properties.get("/", async (c) => {
+  const properties = await getProperties();
+  return c.json(properties);
 });
 
 properties.get("/:id", (c) => {
