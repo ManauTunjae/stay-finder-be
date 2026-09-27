@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "NodeNext",
-    "resolveJsonModule": true,
     "strict": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
