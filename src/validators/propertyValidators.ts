@@ -22,11 +22,25 @@ export const propertyValidators = zValidator(
       return c.json(
         {
           error: result.error.issues.map((issue) => {
-            return [issue.path.join(","), issue.message];
+            return [issue.path.join(", "), issue.message];
           }),
         },
         400,
       );
+    }
+  },
+);
+
+export const propertyOptionalValidator = zValidator(
+  "json",
+  propertyOptionalSchema,
+  (result, c) => {
+    if (!result.success) {
+      return c.json({
+        error: result.error.issues.map((issue) => {
+          return [issue.path.join(", "), issue.message];
+        }),
+      });
     }
   },
 );
