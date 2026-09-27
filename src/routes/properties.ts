@@ -55,6 +55,19 @@ async function getProperties(): Promise<Property[]> {
   }
 }
 
+async function saveProperties(properties: Property[]): Promise<void> {
+  try {
+    const data = JSON.stringify(properties, null, 2);
+    await fs.writeFile("src/data/properties.json", data, {
+      encoding: "utf-8",
+    });
+    return;
+  } catch (e) {
+    console.warn("Error writing to json file", e);
+    throw Error("Error writing properties to json file", e);
+  }
+}
+
 properties.get("/", async (c) => {
   const properties = await getProperties();
   return c.json(properties);
