@@ -51,13 +51,16 @@ properties.get("/:id", async (c) => {
 });
 
 properties.post("/", propertyValidator, async (c) => {
-  const propertyBody: NewProperty = c.req.valid("json");
   const allProperties = await getProperties();
+  const propertyBody: NewProperty = c.req.valid("json");
+
   const property: Property = {
     ...propertyBody,
     property_id: `property_${1000 + allProperties.length + 1}`,
   };
+
   allProperties.push(property);
+
   try {
     await saveProperties(allProperties);
   } catch (error) {
@@ -67,8 +70,8 @@ properties.post("/", propertyValidator, async (c) => {
 });
 
 properties.patch("/:id", propertyOptionalValidator, async (c) => {
-  const propertyId = c.req.param("id");
   const allProperties = await getProperties();
+  const propertyId = c.req.param("id");
 
   const propertyIndex = allProperties.findIndex(
     (p) => p.property_id === propertyId,
@@ -85,12 +88,35 @@ properties.patch("/:id", propertyOptionalValidator, async (c) => {
     ...propertyBody,
     property_id: allProperties[propertyIndex].property_id,
   };
+
   try {
     await saveProperties(allProperties);
   } catch (error) {
     return c.json({ error: "Could not update property" }, 500);
   }
   return c.json(allProperties[propertyIndex]);
+});
+
+properties.delete("/:id", async (c) => {
+  const allProperties = await getProperties();
+  const propertyId = c.req.param("id");
+
+  const propertyIndex = allProperties.findIndex(
+    (p) => p.property_id === propertyId,
+  );
+
+  if (propertyIndex === -1) {
+    return c.json({ error: "Property not found" }, 404);
+  }
+
+  allProperties.splice(propertyIndex, 1);
+
+  try {
+    await saveProperties(allProperties);
+  } catch (error) {
+    return c.json({ error: "Could not delete property" }, 500);
+  }
+  return c.json({ message: "Property is deleted" }, 200);
 });
 
 export default properties;
