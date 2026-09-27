@@ -85,13 +85,18 @@ properties.get("/:id", async (c) => {
 });
 
 properties.post("/", async (c) => {
-  const propertyBody = await c.req.json<Omit<Property, "property_id">>();
-
+  const propertyBody = await c.req.json<Property>();
+  const allProperties = await getProperties();
   const property: Property = {
     ...propertyBody,
-    property_id: `property_${1000 + dummyProperties.length + 1}`,
+    property_id: `property_${1000 + allProperties.length + 1}`,
   };
-  dummyProperties.push(property);
+  allProperties.push(property);
+  try {
+    await saveProperties(allProperties);
+  } catch (e) {
+    return c.json({ e: "Could not save property" }, 500);
+  }
   return c.json(property, 201);
 });
 
