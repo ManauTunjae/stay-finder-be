@@ -30,13 +30,5 @@
     "location": "Malmö, Sweden",
     "price_per_night": 950,
     "max_guests": 3
-  },
-  {
-    "title": "Kungshotel Katrineholm",
-    "description": "Katrineholm boende som är prisvärd och mysigt nära stationen.",
-    "max_guests": 2,
-    "price_per_night": 3000,
-    "location": "Stockholm, Sweden",
-    "property_id": "property_1005"
   }
 ]
