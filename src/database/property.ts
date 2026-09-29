@@ -61,3 +61,21 @@ export async function updateProperty(
   }
   return data;
 }
+
+export async function deleteProperty(id: string): Promise<Property | null> {
+  const existingProperty = await getPropertyById(id);
+
+  if (!existingProperty) {
+    return null;
+  }
+
+  const { error } = await supabase
+    .from("properties")
+    .delete()
+    .eq("property_id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return existingProperty;
+}
