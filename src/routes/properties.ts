@@ -1,56 +1,18 @@
 import { Hono } from "hono";
 import { supabase } from "../lib/supabase.js"
-import fs from "fs/promises";
+// import fs from "fs/promises";
 import type { Property, NewProperty } from "../types/property.js";
+import * as db from "../database/property.js";
 import {
   propertyOptionalValidator,
   propertyValidator,
 } from "../validators/propertyValidators.js";
-import { preprocess } from "zod";
 
 const properties = new Hono({ strict: false });
 
-// async function getProperties(): Promise<Property[]> {
-//   try {
-//     const data = await fs.readFile("src/data/properties.json", {
-//       encoding: "utf8",
-//     });
-//     const properties: Property[] = JSON.parse(data);
-//     return properties;
-//   } catch (e) {
-//     console.warn("Error getting propertoes from json", e);
-//     return [];
-//   }
-// }
-
-// async function saveProperties(properties: Property[]): Promise<void> {
-//   try {
-//     const data = JSON.stringify(properties, null, 2);
-//     await fs.writeFile("src/data/properties.json", data, {
-//       encoding: "utf-8",
-//     });
-//     return;
-//   } catch (error) {
-//     console.warn("Error writing to json file", error);
-//     throw Error("Error writing properties to json file");
-//   }
-// }
-
 properties.get("/", async (c) => {
-  const { data, error } = await supabase
-    .from("properties")
-    .select("*");
-
-  if (error) {
-    return c.json(
-      {
-        error: error.message
-      },
-      500
-    );
-  }
-
-  return c.json(data ?? []);
+  const allProperties = await db.getProperties();
+  return c.json(allProperties);
 });
 
 // properties.get("/:id", async (c) => {
