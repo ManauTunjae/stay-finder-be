@@ -1,10 +1,14 @@
-interface Property {
-    property_id: string;
-    title: string;
-    description: string;
-    location: string;
-    price_per_night: number;
-    max_guests: number;
+export interface NewProperty {
+  title: string;
+  description: string;
+  city: string;
+  country: string;
+  price_per_night: number;
+  max_guests: number;
+  image_url?: string | null;
 }
 
-type NewProperty = Omit<Property, "property_id">;
+export interface Property extends NewProperty {
+  property_id: string;
+  created_at: string;
+}

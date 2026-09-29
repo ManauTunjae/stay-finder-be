@@ -1,14 +1,14 @@
-export interface NewProperty {
-  title: string;
-  description: string;
-  city: string;
-  country: string;
-  price_per_night: number;
-  max_guests: number;
-  image_url?: string | null;
+interface NewBooking {
+  property_id: string;
+  guest_name: string;
+  guest_email: string;
+  check_in: string;
+  check_out: string;
+  guests: number;
+  status?: "pending" | "confirmed" | "cancelled";
 }
 
-export interface Property extends NewProperty {
-  property_id: string;
-  created_at: string;
+interface Booking extends NewBooking {
+  booking_id: string;
+  status: "pending" | "confirmed" | "cancelled";
 }
