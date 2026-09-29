@@ -10,19 +10,6 @@ import {
 
 const properties = new Hono({ strict: false });
 
-// async function saveProperties(properties: Property[]): Promise<void> {
-//   try {
-//     const data = JSON.stringify(properties, null, 2);
-//     await fs.writeFile("src/data/properties.json", data, {
-//       encoding: "utf-8",
-//     });
-//     return;
-//   } catch (error) {
-//     console.warn("Error writing to json file", error);
-//     throw Error("Error writing properties to json file");
-//   }
-// }
-
 properties.get("/", async (c) => {
   const allProperties = await db.getProperties();
   return c.json(allProperties);
