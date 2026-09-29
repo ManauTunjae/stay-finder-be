@@ -2,14 +2,13 @@ import * as z from "zod";
 import { zValidator } from "@hono/zod-validator";
 
 const propertySchema = z.object({
-  title: z.string().min(2, "Title is neccesary"),
-  description: z.string().min(3, "Description is neccesary"),
-  max_guests: z.number().min(1, "Max guests needs to be at least 1"),
-  price_per_night: z
-    .number()
-    .min(100, "Price per night needs to be minimun of 100"),
-  location: z.string().min(2, "Location is neccesary"),
-  property_id: z.string().optional(),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  city: z.string().min(1, "City is required"),
+  country: z.string().min(1, "Country is required"),
+  price_per_night: z.number().int().positive("Price must be greater than 0"),
+  max_guests: z.number().int().positive("Max guests must be greater than 0"),
+  image_url: z.url("Image URL must be a valid URL").optional().nullable(),
 });
 
 const propertyOptionalSchema = propertySchema.partial();
