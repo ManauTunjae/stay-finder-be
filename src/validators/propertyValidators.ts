@@ -11,8 +11,6 @@ const propertySchema = z.object({
   image_url: z.url("Image URL must be a valid URL").optional().nullable(),
 });
 
-const propertyOptionalSchema = propertySchema.partial();
-
 export const propertyValidator = zValidator(
   "json",
   propertySchema,
@@ -26,20 +24,6 @@ export const propertyValidator = zValidator(
         },
         400,
       );
-    }
-  },
-);
-
-export const propertyOptionalValidator = zValidator(
-  "json",
-  propertyOptionalSchema,
-  (result, c) => {
-    if (!result.success) {
-      return c.json({
-        error: result.error.issues.map((issue) => {
-          return [issue.path.join(", "), issue.message];
-        }),
-      });
     }
   },
 );
