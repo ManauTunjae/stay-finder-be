@@ -2,8 +2,7 @@ import * as z from "zod";
 import { zValidator } from "@hono/zod-validator";
 
 const propertyParamSchema = z.object({
-  // TODO: byt tillbaka till z.uuid() efter createProperty
-  id: z.guid("Property id must be a valid UUID")
+  id: z.uuid("Property id must be a valid UUID")
 });
 
 const propertyParamValidator = zValidator(

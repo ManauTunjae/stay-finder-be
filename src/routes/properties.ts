@@ -25,23 +25,21 @@ properties.get("/:id", propertyParamValidator, async (c) => {
   return c.json(property);
 });
 
-// properties.post("/", propertyValidator, async (c) => {
-//   const allProperties = await getProperties();
-//   const propertyBody: NewProperty = c.req.valid("json");
-//   const property: Property = {
-//     ...propertyBody,
-//     property_id: `property_${1000 + allProperties.length + 1}`,
-//   };
-
-//   allProperties.push(property);
-
-//   try {
-//     await saveProperties(allProperties);
-//   } catch (error) {
-//     return c.json({ error: "Could not save property" }, 500);
-//   }
-//   return c.json(property, 201);
-// });
+properties.post("/", propertyValidator, async (c) => {
+  try {
+    const newProperty: NewProperty = c.req.valid("json");
+    const property = await db.createProperty(newProperty);
+    return c.json(property, 201);
+  } catch (error) {
+    console.error(error);
+    return c.json(
+      {
+        error: "Could not create new property",
+      },
+      500,
+    );
+  }
+});
 
 // properties.patch("/:id", propertyOptionalValidator, async (c) => {
 //   const allProperties = await getProperties();
