@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { supabase } from "../lib/supabase.js"
+import { supabase } from "../lib/supabase.js";
 // import fs from "fs/promises";
 import type { Property, NewProperty } from "../types/property.js";
 import * as db from "../database/property.js";
@@ -7,6 +7,7 @@ import {
   propertyOptionalValidator,
   propertyValidator,
 } from "../validators/propertyValidators.js";
+import propertyParamValidator from "../validators/propertyParamValidator.js";
 
 const properties = new Hono({ strict: false });
 
@@ -15,16 +16,14 @@ properties.get("/", async (c) => {
   return c.json(allProperties);
 });
 
-// properties.get("/:id", async (c) => {
-//   const allProperties = await getProperties();
-//   const propertyId = c.req.param("id");
-//   const property = allProperties.find((p) => p.property_id === propertyId);
-
-//   if (!property) {
-//     return c.json({ error: "Property not found" }, 404);
-//   }
-//   return c.json(property);
-// });
+properties.get("/:id", propertyParamValidator, async (c) => {
+  const { id } = c.req.valid("param");
+  const property = await db.getPropertyById(id);
+  if (!property) {
+    return c.json({ error: "Cound not found a property" }, 404);
+  }
+  return c.json(property);
+});
 
 // properties.post("/", propertyValidator, async (c) => {
 //   const allProperties = await getProperties();
