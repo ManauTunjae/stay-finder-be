@@ -1,6 +1,5 @@
 import { Hono } from "hono";
-import { supabase } from "../lib/supabase.js";
-import type { Property, NewProperty } from "../types/property.js";
+import type { NewProperty } from "../types/property.js";
 import * as db from "../database/property.js";
 import { propertyValidator } from "../validators/propertyValidators.js";
 import propertyParamValidator from "../validators/propertyParamValidator.js";
