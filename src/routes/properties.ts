@@ -1,10 +1,8 @@
 import { Hono } from "hono";
 import { supabase } from "../lib/supabase.js";
-// import fs from "fs/promises";
 import type { Property, NewProperty } from "../types/property.js";
 import * as db from "../database/property.js";
 import {
-  propertyOptionalValidator,
   propertyValidator,
 } from "../validators/propertyValidators.js";
 import propertyParamValidator from "../validators/propertyParamValidator.js";
@@ -41,33 +39,16 @@ properties.post("/", propertyValidator, async (c) => {
   }
 });
 
-// properties.patch("/:id", propertyOptionalValidator, async (c) => {
-//   const allProperties = await getProperties();
-//   const propertyId = c.req.param("id");
+properties.put("/:id", propertyParamValidator, propertyValidator, async (c) => {
+  const { id } = c.req.valid("param");
+  const body: NewProperty = c.req.valid("json");
+  const updateProperty = await db.updateProperty(id, body);
 
-//   const propertyIndex = allProperties.findIndex(
-//     (p) => p.property_id === propertyId,
-//   );
-
-//   if (propertyIndex === -1) {
-//     return c.json({ error: "Property not found" }, 404);
-//   }
-
-//   const propertyBody: Partial<Property> = c.req.valid("json");
-
-//   allProperties[propertyIndex] = {
-//     ...allProperties[propertyIndex],
-//     ...propertyBody,
-//     property_id: allProperties[propertyIndex].property_id,
-//   };
-
-//   try {
-//     await saveProperties(allProperties);
-//   } catch (error) {
-//     return c.json({ error: "Could not update property" }, 500);
-//   }
-//   return c.json(allProperties[propertyIndex]);
-// });
+  if (!updateProperty) {
+    return c.json({ error: "Property not found " }, 404);
+  }
+  return c.json(updateProperty);
+});
 
 // properties.delete("/:id", async (c) => {
 //   const allProperties = await getProperties();
