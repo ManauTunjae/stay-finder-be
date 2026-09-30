@@ -2,7 +2,7 @@ import * as z from "zod";
 import { zValidator } from "@hono/zod-validator";
 
 const bookingBaseSchema = z.object({
-  property_id: z.string().min(1, "Not valid property id"),
+  property_id: z.uuid("Property id must be a valid UUID"),
   guest_name: z.string().min(2, "Guest name must be at least 2 characters"),
   guest_email: z.email("Email is not valid"),
   check_in: z.iso.date({ error: "Check-in must be a date (YYYY-MM-DD)" }),
@@ -11,7 +11,7 @@ const bookingBaseSchema = z.object({
   status: z.enum(["pending", "confirmed", "cancelled"]).default("pending"),
 });
 
-const bookingSchema = bookingBaseSchema.refine(
+const bookingDateSchema = bookingBaseSchema.refine(
   (data) => data.check_out > data.check_in,
   {
     error: "Check-out must be after check-in",
@@ -19,30 +19,9 @@ const bookingSchema = bookingBaseSchema.refine(
   },
 );
 
-const bookingOptionalSchema = bookingBaseSchema.partial().extend({
-  status: z.enum(["pending", "confirmed", "cancelled"]).optional(),
-});
-
 export const bookingValidator = zValidator(
   "json",
-  bookingSchema,
-  (result, c) => {
-    if (!result.success) {
-      return c.json(
-        {
-          error: result.error.issues.map((issue) => {
-            return [issue.path.join(", "), issue.message];
-          }),
-        },
-        400,
-      );
-    }
-  },
-);
-
-export const bookingOptionalValidator = zValidator(
-  "json",
-  bookingOptionalSchema,
+  bookingDateSchema,
   (result, c) => {
     if (!result.success) {
       return c.json(
