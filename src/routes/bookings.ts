@@ -1,10 +1,9 @@
 import { Hono } from "hono";
 import type { NewBooking } from "../types/booking.js";
 import * as db from "../database/booking.js";
-// import fs from "fs/promises";
+import * as dbProperty from "../database/property.js";
 import { bookingValidator } from "../validators/bookingValidator.js";
 import bookingParamValidator from "../validators/bookingParamValidator.js";
-import { preprocess } from "zod";
 
 const bookings = new Hono({ strict: false });
 
@@ -22,24 +21,28 @@ bookings.get("/:id", bookingParamValidator, async (c) => {
   return c.json(booking);
 });
 
-// bookings.post("/", bookingValidator, async (c) => {
-//   const allBookings = await getBookings();
-//   const bookingBody = c.req.valid("json");
-
-//   const booking: Booking = {
-//     ...bookingBody,
-//     booking_id: `booking_${allBookings.length + 1}`,
-//   };
-
-//   allBookings.push(booking);
-
-//   try {
-//     await saveBookings(allBookings);
-//   } catch (error) {
-//     return c.json({ error: "Could not save booking" }, 500);
-//   }
-//   return c.json(booking, 201);
-// });
+bookings.post("/", bookingValidator, async (c) => {
+  try {
+    const newBooking: NewBooking = c.req.valid("json");
+    const property = await dbProperty.getPropertyById(newBooking.property_id);
+    if (!property) {
+      return c.json({ error: "Property not found" }, 404);
+    }
+    if (newBooking.guests > property.max_guests) {
+      return c.json({ error: `This property allows a maximum of ${property.max_guests} guests` }, 400);
+    }
+    const booking = await db.createBooking(newBooking);
+    return c.json(db.createBooking, 201);
+  } catch (error) {
+    console.error(error);
+    return c.json(
+      {
+        error: "Could not create new booking",
+      },
+      500,
+    );
+  }
+});
 
 // bookings.patch("/:id", bookingOptionalValidator, async (c) => {
 //   const allBookings = await getBookings();

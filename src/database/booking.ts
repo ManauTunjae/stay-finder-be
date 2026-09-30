@@ -25,3 +25,20 @@ export async function getBookingById(id: string): Promise<Booking | null> {
   }
   return data;
 }
+
+export async function createBooking(booking: NewBooking): Promise<Booking> {
+  const { data, error } = await supabase
+    .from("bookings")
+    .insert(booking)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Booking could not created");
+  }
+  return data;
+}
