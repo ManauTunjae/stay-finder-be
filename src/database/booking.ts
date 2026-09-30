@@ -12,3 +12,16 @@ export async function getBookings(): Promise<Booking[]> {
   }
   return data ?? [];
 }
+
+export async function getBookingById(id: string): Promise<Booking | null> {
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .eq("booking_id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
