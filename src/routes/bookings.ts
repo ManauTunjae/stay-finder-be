@@ -1,116 +1,89 @@
 import { Hono } from "hono";
-import fs from "fs/promises";
-import {
-  bookingValidator,
-  bookingOptionalValidator,
-} from "../validators/bookingValidation.js";
+import type { NewBooking } from "../types/booking.js";
+import * as db from "../database/booking.js";
+// import fs from "fs/promises";
+import { bookingValidator } from "../validators/bookingValidator.js";
 import { preprocess } from "zod";
 
 const bookings = new Hono({ strict: false });
 
-async function getBookings(): Promise<Booking[]> {
-  try {
-    const data = await fs.readFile("src/data/bookings.json", {
-      encoding: "utf8",
-    });
-    const bookings: Booking[] = JSON.parse(data);
-    return bookings;
-  } catch (e) {
-    console.warn("Error getting bookings from json", e);
-    return [];
-  }
-}
-
-async function saveBookings(bookings: Booking[]): Promise<void> {
-  try {
-    const data = JSON.stringify(bookings, null, 2);
-    await fs.writeFile("src/data/bookings.json", data, {
-      encoding: "utf-8",
-    });
-    return;
-  } catch (error) {
-    console.warn("Error writing to json file", error);
-    throw Error("Error writing bookings to json file");
-  }
-}
-
 bookings.get("/", async (c) => {
-  const allBookings = await getBookings();
+  const allBookings = await db.getBookings();
   return c.json(allBookings);
 });
 
-bookings.get("/:id", async (c) => {
-  const allbookings = await getBookings();
-  const bookingId = c.req.param("id");
-  const booking = allbookings.find((b) => b.booking_id === bookingId);
+// bookings.get("/:id", async (c) => {
+//   const allbookings = await getBookings();
+//   const bookingId = c.req.param("id");
+//   const booking = allbookings.find((b) => b.booking_id === bookingId);
 
-  if (!booking) {
-    return c.json({ error: "Booking not found" }, 404);
-  }
-  return c.json(booking);
-});
+//   if (!booking) {
+//     return c.json({ error: "Booking not found" }, 404);
+//   }
+//   return c.json(booking);
+// });
 
-bookings.post("/", bookingValidator, async (c) => {
-  const allBookings = await getBookings();
-  const bookingBody = c.req.valid("json");
+// bookings.post("/", bookingValidator, async (c) => {
+//   const allBookings = await getBookings();
+//   const bookingBody = c.req.valid("json");
 
-  const booking: Booking = {
-    ...bookingBody,
-    booking_id: `booking_${allBookings.length + 1}`,
-  };
+//   const booking: Booking = {
+//     ...bookingBody,
+//     booking_id: `booking_${allBookings.length + 1}`,
+//   };
 
-  allBookings.push(booking);
+//   allBookings.push(booking);
 
-  try {
-    await saveBookings(allBookings);
-  } catch (error) {
-    return c.json({ error: "Could not save booking" }, 500);
-  }
-  return c.json(booking, 201);
-});
+//   try {
+//     await saveBookings(allBookings);
+//   } catch (error) {
+//     return c.json({ error: "Could not save booking" }, 500);
+//   }
+//   return c.json(booking, 201);
+// });
 
-bookings.patch("/:id", bookingOptionalValidator, async (c) => {
-  const allBookings = await getBookings();
-  const bookingId = c.req.param("id");
+// bookings.patch("/:id", bookingOptionalValidator, async (c) => {
+//   const allBookings = await getBookings();
+//   const bookingId = c.req.param("id");
 
-  const bookingIndex = allBookings.findIndex((b) => b.booking_id === bookingId);
+//   const bookingIndex = allBookings.findIndex((b) => b.booking_id === bookingId);
 
-  if (bookingIndex === -1) {
-    return c.json({ error: "Booking not found" }, 404);
-  }
-  const bookingBody: Partial<Booking> = c.req.valid("json");
+//   if (bookingIndex === -1) {
+//     return c.json({ error: "Booking not found" }, 404);
+//   }
+//   const bookingBody: Partial<Booking> = c.req.valid("json");
 
-  allBookings[bookingIndex] = {
-    ...allBookings[bookingIndex],
-    ...bookingBody,
-    booking_id: allBookings[bookingIndex].booking_id,
-  };
-  try {
-    await saveBookings(allBookings);
-  } catch (error) {
-    return c.json({ error: "Could not update booking" }, 500);
-  }
-  return c.json(allBookings[bookingIndex]);
-});
+//   allBookings[bookingIndex] = {
+//     ...allBookings[bookingIndex],
+//     ...bookingBody,
+//     booking_id: allBookings[bookingIndex].booking_id,
+//   };
+//   try {
+//     await saveBookings(allBookings);
+//   } catch (error) {
+//     return c.json({ error: "Could not update booking" }, 500);
+//   }
+//   return c.json(allBookings[bookingIndex]);
+// });
 
-bookings.delete("/:id", async (c) => {
-  const allbookings = await getBookings();
-  const bookingId = c.req.param("id");
+// bookings.delete("/:id", async (c) => {
+//   const allbookings = await getBookings();
+//   const bookingId = c.req.param("id");
 
-  const bookingIndex = allbookings.findIndex((b) => b.booking_id === bookingId);
+//   const bookingIndex = allbookings.findIndex((b) => b.booking_id === bookingId);
 
-  if (bookingIndex === -1) {
-    return c.json({ error: "Booking not found" }, 404);
-  }
+//   if (bookingIndex === -1) {
+//     return c.json({ error: "Booking not found" }, 404);
+//   }
 
-  allbookings.splice(bookingIndex, 1);
+//   allbookings.splice(bookingIndex, 1);
 
-  try {
-    await saveBookings(allbookings);
-  } catch (error) {
-    return c.json({ error: "Could not delete booking" }, 500);
-  }
-  return c.json({ message: "Booking is deleted" }, 200);
-});
+//   try {
+//     await saveBookings(allbookings);
+//   } catch (error) {
+//     return c.json({ error: "Could not delete booking" }, 500);
+//   }
+//   return c.json({ message: "Booking is deleted" }, 200);
+// });
 
 export default bookings;
