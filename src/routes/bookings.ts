@@ -3,6 +3,7 @@ import type { NewBooking } from "../types/booking.js";
 import * as db from "../database/booking.js";
 // import fs from "fs/promises";
 import { bookingValidator } from "../validators/bookingValidator.js";
+import bookingParamValidator from "../validators/bookingParamValidator.js";
 import { preprocess } from "zod";
 
 const bookings = new Hono({ strict: false });
@@ -12,16 +13,14 @@ bookings.get("/", async (c) => {
   return c.json(allBookings);
 });
 
-// bookings.get("/:id", async (c) => {
-//   const allbookings = await getBookings();
-//   const bookingId = c.req.param("id");
-//   const booking = allbookings.find((b) => b.booking_id === bookingId);
-
-//   if (!booking) {
-//     return c.json({ error: "Booking not found" }, 404);
-//   }
-//   return c.json(booking);
-// });
+bookings.get("/:id", bookingParamValidator, async (c) => {
+  const { id } = c.req.valid("param");
+  const booking = await db.getBookingById(id);
+  if (!booking) {
+    return c.json({ error: "Booking not found" }, 404);
+  }
+  return c.json(booking);
+});
 
 // bookings.post("/", bookingValidator, async (c) => {
 //   const allBookings = await getBookings();
