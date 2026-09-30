@@ -15,7 +15,7 @@ properties.get("/:id", propertyParamValidator, async (c) => {
   const { id } = c.req.valid("param");
   const property = await db.getPropertyById(id);
   if (!property) {
-    return c.json({ error: "Cound not found a property" }, 404);
+    return c.json({ error: "Could not found a property" }, 404);
   }
   return c.json(property);
 });
