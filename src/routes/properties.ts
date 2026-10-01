@@ -4,6 +4,7 @@ import * as db from "../database/property.js";
 import { propertyValidator } from "../validators/propertyValidators.js";
 import propertyParamValidator from "../validators/propertyParamValidator.js";
 import propertyQueryValidator from "../validators/propertyQueryValidator.js";
+import propertyKindParamValidator from "../validators/propertyKindParamValidator.js";
 
 const properties = new Hono({ strict: false });
 
@@ -24,6 +25,26 @@ properties.get("/", propertyQueryValidator, async (c) => {
     );
   }
 });
+
+// GET: properties either properties/kind/villa/ | properties/kind/appartment/
+properties.get("/kind/:kind", propertyQueryValidator, propertyKindParamValidator, async (c) => {
+  const { kind } = c.req.valid("param");
+  const query = c.req.valid("query");
+  try {
+    const allProperties = await db.getProperties({ ...query, kind });
+    return c.json(allProperties);
+  } catch (error) {
+    return c.json(
+      {
+        data: [],
+        count: 0,
+        offset: query.offset,
+        limit: query.limit,
+      },
+      400,
+    );
+  }
+})
 
 properties.get("/:id", propertyParamValidator, async (c) => {
   const { id } = c.req.valid("param");
