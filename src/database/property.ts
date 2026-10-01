@@ -1,17 +1,61 @@
 import { supabase } from "../lib/supabase.js";
-import type { NewProperty, Property } from "../types/property.js";
+import type { PaginatedListResponse } from "../types/global.js";
+import type {
+  NewProperty,
+  Property,
+  PropertyListQuery,
+} from "../types/property.js";
 
-export async function getProperties(): Promise<Property[]> {
-  const { data, error } = await supabase
+export async function getProperties(
+  query: PropertyListQuery,
+): Promise<PaginatedListResponse<Property>> {
+  const startIndex = query.offset;
+  const endIndex = query.offset + query.limit - 1;
+
+  const ascending = query.sort_order === "asc";
+
+  let supabaseQuery = supabase
     .from("properties")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("*", { count: "exact" });
+
+  if (query.city) {
+    supabaseQuery = supabaseQuery.eq("city", query.city);
+  }
+
+  if (query.max_guests) {
+    supabaseQuery = supabaseQuery.gte("max_guests", query.max_guests);
+  }
+
+  if (query.min_price !== undefined) {
+    supabaseQuery = supabaseQuery.gte("price_per_night", query.min_price);
+  }
+
+  if (query.max_price !== undefined) {
+    supabaseQuery = supabaseQuery.lte("price_per_night", query.max_price);
+  }
+
+  if (query.q) {
+    const searchPattern = `%${query.q}%`;
+
+    supabaseQuery = supabaseQuery.or(
+      `title.ilike.${searchPattern},description.ilike.${searchPattern},city.ilike.${searchPattern}`,
+    );
+  }
+
+  const { data, error, count } = await supabaseQuery
+    .order(query.sort_by, { ascending })
+    .range(startIndex, endIndex);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data ?? [];
+  return {
+    data: data ?? [],
+    count: count ?? 0,
+    offset: query.offset,
+    limit: query.limit,
+  };
 }
 
 export async function getPropertyById(id: string): Promise<Property | null> {
