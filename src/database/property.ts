@@ -42,6 +42,10 @@ export async function getProperties(
     );
   }
 
+  if (query.kind) {
+    supabaseQuery = supabaseQuery.eq("kind", query.kind);
+  }
+
   const { data, error, count } = await supabaseQuery
     .order(query.sort_by, { ascending })
     .range(startIndex, endIndex);
