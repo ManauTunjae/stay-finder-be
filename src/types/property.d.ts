@@ -14,9 +14,10 @@ export type PropertyListQuery = {
   min_price?: number;
   max_price?: number;
   q?: string;
-  sort_by?: PropertySortBy;
-  sort_order?: SortOrder;
+  sort_by: PropertySortBy;
+  sort_order: SortOrder;
 };
+
 
 export interface NewProperty {
   title: string;
