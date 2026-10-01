@@ -3,12 +3,26 @@ import type { NewProperty } from "../types/property.js";
 import * as db from "../database/property.js";
 import { propertyValidator } from "../validators/propertyValidators.js";
 import propertyParamValidator from "../validators/propertyParamValidator.js";
+import propertyQueryValidator from "../validators/propertyQueryValidator.js";
 
 const properties = new Hono({ strict: false });
 
-properties.get("/", async (c) => {
-  const allProperties = await db.getProperties();
-  return c.json(allProperties);
+properties.get("/", propertyQueryValidator, async (c) => {
+  const query = c.req.valid("query");
+  try {
+    const allProperties = await db.getProperties(query);
+    return c.json(allProperties);
+  } catch (error) {
+    return c.json(
+      {
+        data: [],
+        count: 0,
+        offset: query.offset,
+        limit: query.limit,
+      },
+      500,
+    );
+  }
 });
 
 properties.get("/:id", propertyParamValidator, async (c) => {
@@ -53,7 +67,10 @@ properties.delete("/:id", propertyParamValidator, async (c) => {
   if (!deleteProperty) {
     return c.json({ error: "Property not found" }, 404);
   }
-  return c.json({ message: `Property: ${deleteProperty.title} is deleted`, property: deleteProperty });
+  return c.json({
+    message: `Property: ${deleteProperty.title} is deleted`,
+    property: deleteProperty,
+  });
 });
 
 export default properties;
