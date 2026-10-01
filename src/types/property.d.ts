@@ -1,3 +1,5 @@
+export type PropertyKind =  "apartment" | "villa";
+
 export type PropertySortBy =
   | "title"
   | "city"
@@ -24,6 +26,7 @@ export interface NewProperty {
   description: string;
   city: string;
   country: string;
+  kind: PropertyKind;
   price_per_night: number;
   max_guests: number;
   image_url?: string | null;
