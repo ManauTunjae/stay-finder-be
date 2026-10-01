@@ -18,6 +18,7 @@ export type PropertyListQuery = {
   q?: string;
   sort_by: PropertySortBy;
   sort_order: SortOrder;
+  kind?: PropertyKind;
 };
 
 
