@@ -36,7 +36,7 @@ auth.post("/login", authValidator, async (c) => {
   const { email, password } = c.req.valid("json");
   try {
     const supabase = c.get("supabase");
-    const { data, error } = await supabase.auth.signWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
