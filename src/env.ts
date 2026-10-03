@@ -12,6 +12,8 @@ function getEnv(key: string): string {
 }
 export const env = {
   supabaseUrl: getEnv("SUPABASE_URL"),
-  supabaseKEY: getEnv("SUPABASE_KEY"),
+  supabaseKey: getEnv("SUPABASE_KEY"),
   honoPort: Number(process.env.HONO_PORT) || 3000,
+  frontendUrl: process.env.FRONTEND_URL || "http://localhost:3001",
+  nodeEnv: process.env.NODE_ENV || "development"
 };
