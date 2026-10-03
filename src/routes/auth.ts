@@ -31,3 +31,5 @@ auth.post("/register", authValidator, async (c) => {
     );
   }
 });
+
+export default auth;
