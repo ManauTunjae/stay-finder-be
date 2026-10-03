@@ -55,6 +55,18 @@ async function setSupabaseContext(c: Context): Promise<void> {
 }
 
 export async function optionalAuth(c: Context, next: Next) {
-  await setSupabaseContext(c)
+  await setSupabaseContext(c);
+  await next();
+}
+
+export async function requireAuth(c: Context, next: Next) {
+  await setSupabaseContext(c);
+  const user = c.get("user");
+
+  if (!user) {
+    throw new HTTPException(401, {
+      message: "unauthorized",
+    });
+  }
   await next();
 }
