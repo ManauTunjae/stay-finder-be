@@ -35,7 +35,7 @@ function createSupabaseForRequest(c: Context) {
   });
 }
 
-async function getSupabaseContext(c: Context): Promise<void> {
+async function setSupabaseContext(c: Context): Promise<void> {
   const existingClient = c.get("supabase") as BasicSupabaseClient | undefined;
 
   if (existingClient) {
@@ -52,4 +52,9 @@ async function getSupabaseContext(c: Context): Promise<void> {
   } = await supabase.auth.getUser();
 
   c.set("user", error ? null : user);
+}
+
+export async function optionalAuth(c: Context, next: Next) {
+  await setSupabaseContext(c)
+  await next();
 }
