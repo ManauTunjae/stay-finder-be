@@ -1,12 +1,13 @@
-import { supabase } from "../lib/supabase.js";
 import type { PaginatedListResponse } from "../types/global.js";
 import type {
   NewProperty,
   Property,
   PropertyListQuery,
 } from "../types/property.js";
+import type { BasicSupabaseClient } from "../types/supabase.js";
 
 export async function getProperties(
+  supabase: BasicSupabaseClient,
   query: PropertyListQuery,
 ): Promise<PaginatedListResponse<Property>> {
   const startIndex = query.offset;
@@ -62,7 +63,10 @@ export async function getProperties(
   };
 }
 
-export async function getPropertyById(id: string): Promise<Property | null> {
+export async function getPropertyById(
+  supabase: BasicSupabaseClient,
+  id: string,
+): Promise<Property | null> {
   const { data, error } = await supabase
     .from("properties")
     .select("*")
@@ -76,10 +80,14 @@ export async function getPropertyById(id: string): Promise<Property | null> {
   return data;
 }
 
-export async function createProperty(property: NewProperty): Promise<Property> {
+export async function createProperty(
+  supabase: BasicSupabaseClient,
+  property: NewProperty,
+  hostId: string,
+): Promise<Property> {
   const { data, error } = await supabase
     .from("properties")
-    .insert(property)
+    .insert({...property, host_id: hostId})
     .select()
     .single();
 
@@ -94,13 +102,16 @@ export async function createProperty(property: NewProperty): Promise<Property> {
 }
 
 export async function updateProperty(
+  supabase: BasicSupabaseClient,
   id: string,
+  hostId: string,
   property: NewProperty,
 ): Promise<Property | null> {
   const { data, error } = await supabase
     .from("properties")
     .update(property)
     .eq("property_id", id)
+    .eq("host_id", hostId)
     .select()
     .maybeSingle();
 
@@ -110,20 +121,21 @@ export async function updateProperty(
   return data;
 }
 
-export async function deleteProperty(id: string): Promise<Property | null> {
-  const existingProperty = await getPropertyById(id);
-
-  if (!existingProperty) {
-    return null;
-  }
-
-  const { error } = await supabase
+export async function deleteProperty(
+  supabase: BasicSupabaseClient,
+  id: string,
+  hostId: string,  
+): Promise<Property | null> {
+  const { data, error } = await supabase
     .from("properties")
     .delete()
-    .eq("property_id", id);
+    .eq("property_id", id)
+    .eq("host_id", hostId)
+    .select()
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
   }
-  return existingProperty;
+  return data;
 }

@@ -35,5 +35,6 @@ export interface NewProperty {
 
 export interface Property extends NewProperty {
   property_id: string;
+  host_id: string;
   created_at: string;
 }
