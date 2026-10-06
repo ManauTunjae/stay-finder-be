@@ -104,12 +104,14 @@ export async function createProperty(
 export async function updateProperty(
   supabase: BasicSupabaseClient,
   id: string,
+  hostId: string,
   property: NewProperty,
 ): Promise<Property | null> {
   const { data, error } = await supabase
     .from("properties")
     .update(property)
     .eq("property_id", id)
+    .eq("host_id", hostId)
     .select()
     .maybeSingle();
 
@@ -122,20 +124,18 @@ export async function updateProperty(
 export async function deleteProperty(
   supabase: BasicSupabaseClient,
   id: string,
+  hostId: string,  
 ): Promise<Property | null> {
-  const existingProperty = await getPropertyById(supabase, id);
-
-  if (!existingProperty) {
-    return null;
-  }
-
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("properties")
     .delete()
-    .eq("property_id", id);
+    .eq("property_id", id)
+    .eq("host_id", hostId)
+    .select()
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
   }
-  return existingProperty;
+  return data;
 }
