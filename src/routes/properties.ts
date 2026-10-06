@@ -89,10 +89,16 @@ properties.post("/", requireAuth, propertyValidator, async (c) => {
   }
 });
 
-properties.put("/:id", propertyParamValidator, propertyValidator, async (c) => {
+properties.put("/:id", requireAuth, propertyParamValidator, propertyValidator, async (c) => {
+  const supabase = c.get("supabase");
   const { id } = c.req.valid("param");
+  const user = c.get("user");
+  if (!user) {
+    return c.json({error: "Unathorized"}, 401)
+  }
+
   const body: NewProperty = c.req.valid("json");
-  const updateProperty = await db.updateProperty(id, body);
+  const updateProperty = await db.updateProperty(supabase, id, user.id, body);
 
   if (!updateProperty) {
     return c.json({ error: "Property not found " }, 404);
