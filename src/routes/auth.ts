@@ -58,4 +58,28 @@ auth.post("/login", authValidator, async (c) => {
   }
 });
 
+auth.post("/logout", async (c) => {
+  try {
+    const supabase = c.get("supabase");
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return c.json({ message: "Invalid user session" }, 401);
+    }
+
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      return c.json({
+        message: "Logged out successfully",
+      });
+    }
+    throw error;
+  } catch (error: any) {
+    console.warn("Error in logout", error);
+    return c.json({ message: error?.message }, 500);
+  }
+});
+
 export default auth;
