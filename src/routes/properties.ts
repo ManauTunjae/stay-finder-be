@@ -89,26 +89,37 @@ properties.post("/", requireAuth, propertyValidator, async (c) => {
   }
 });
 
-properties.put("/:id", requireAuth, propertyParamValidator, propertyValidator, async (c) => {
+properties.put(
+  "/:id",
+  requireAuth,
+  propertyParamValidator,
+  propertyValidator,
+  async (c) => {
+    const supabase = c.get("supabase");
+    const { id } = c.req.valid("param");
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ error: "Unathorized" }, 401);
+    }
+
+    const body: NewProperty = c.req.valid("json");
+    const updateProperty = await db.updateProperty(supabase, id, user.id, body);
+
+    if (!updateProperty) {
+      return c.json({ error: "Property not found " }, 404);
+    }
+    return c.json(updateProperty);
+  },
+);
+
+properties.delete("/:id", requireAuth, propertyParamValidator, async (c) => {
   const supabase = c.get("supabase");
   const { id } = c.req.valid("param");
   const user = c.get("user");
-  if (!user) {
-    return c.json({error: "Unathorized"}, 401)
+  if(!user) {
+    return c.json({error: "Unauthorized"}, 401)
   }
-
-  const body: NewProperty = c.req.valid("json");
-  const updateProperty = await db.updateProperty(supabase, id, user.id, body);
-
-  if (!updateProperty) {
-    return c.json({ error: "Property not found " }, 404);
-  }
-  return c.json(updateProperty);
-});
-
-properties.delete("/:id", propertyParamValidator, async (c) => {
-  const { id } = c.req.valid("param");
-  const deleteProperty = await db.deleteProperty(id);
+  const deleteProperty = await db.deleteProperty(supabase, id, user.id);
   if (!deleteProperty) {
     return c.json({ error: "Property not found" }, 404);
   }
