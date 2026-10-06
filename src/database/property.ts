@@ -83,10 +83,11 @@ export async function getPropertyById(
 export async function createProperty(
   supabase: BasicSupabaseClient,
   property: NewProperty,
+  hostId: string,
 ): Promise<Property> {
   const { data, error } = await supabase
     .from("properties")
-    .insert(property)
+    .insert({...property, host_id: hostId})
     .select()
     .single();
 
