@@ -1,4 +1,3 @@
-import { supabase } from "../lib/supabase.js";
 import type { PaginatedListResponse } from "../types/global.js";
 import type {
   NewProperty,
@@ -10,7 +9,7 @@ import type { BasicSupabaseClient } from "../types/supabase.js";
 export async function getProperties(
   supabase: BasicSupabaseClient,
   query: PropertyListQuery,
-): Promise<PaginatedListResponse<Property>> { 
+): Promise<PaginatedListResponse<Property>> {
   const startIndex = query.offset;
   const endIndex = query.offset + query.limit - 1;
 
@@ -64,7 +63,10 @@ export async function getProperties(
   };
 }
 
-export async function getPropertyById(id: string): Promise<Property | null> {
+export async function getPropertyById(
+  supabase: BasicSupabaseClient,
+  id: string,
+): Promise<Property | null> {
   const { data, error } = await supabase
     .from("properties")
     .select("*")
@@ -78,7 +80,10 @@ export async function getPropertyById(id: string): Promise<Property | null> {
   return data;
 }
 
-export async function createProperty(property: NewProperty): Promise<Property> {
+export async function createProperty(
+  supabase: BasicSupabaseClient,
+  property: NewProperty,
+): Promise<Property> {
   const { data, error } = await supabase
     .from("properties")
     .insert(property)
@@ -96,6 +101,7 @@ export async function createProperty(property: NewProperty): Promise<Property> {
 }
 
 export async function updateProperty(
+  supabase: BasicSupabaseClient,
   id: string,
   property: NewProperty,
 ): Promise<Property | null> {
@@ -112,8 +118,11 @@ export async function updateProperty(
   return data;
 }
 
-export async function deleteProperty(id: string): Promise<Property | null> {
-  const existingProperty = await getPropertyById(id);
+export async function deleteProperty(
+  supabase: BasicSupabaseClient,
+  id: string,
+): Promise<Property | null> {
+  const existingProperty = await getPropertyById(supabase, id);
 
   if (!existingProperty) {
     return null;
