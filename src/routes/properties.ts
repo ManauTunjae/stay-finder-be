@@ -10,8 +10,9 @@ const properties = new Hono({ strict: false });
 
 properties.get("/", propertyQueryValidator, async (c) => {
   const query = c.req.valid("query");
+  const supabase = c.get("supabase");
   try {
-    const allProperties = await db.getProperties(query);
+    const allProperties = await db.getProperties(supabase, query);
     return c.json(allProperties);
   } catch (error) {
     return c.json(
@@ -27,30 +28,40 @@ properties.get("/", propertyQueryValidator, async (c) => {
 });
 
 // GET: properties either properties/kind/villa/ | properties/kind/appartment/
-properties.get("/kind/:kind", propertyQueryValidator, propertyKindParamValidator, async (c) => {
-  const { kind } = c.req.valid("param");
-  const query = c.req.valid("query");
-  try {
-    const allProperties = await db.getProperties({ ...query, kind });
-    return c.json(allProperties);
-  } catch (error) {
-    return c.json(
-      {
-        data: [],
-        count: 0,
-        offset: query.offset,
-        limit: query.limit,
-      },
-      400,
-    );
-  }
-})
+properties.get(
+  "/kind/:kind",
+  propertyQueryValidator,
+  propertyKindParamValidator,
+  async (c) => {
+    const { kind } = c.req.valid("param");
+    const query = c.req.valid("query");
+    const supabase = c.get("supabase");
+    try {
+      const allProperties = await db.getProperties(supabase, {
+        ...query,
+        kind,
+      });
+      return c.json(allProperties);
+    } catch (error) {
+      return c.json(
+        {
+          data: [],
+          count: 0,
+          offset: query.offset,
+          limit: query.limit,
+        },
+        400,
+      );
+    }
+  },
+);
 
 properties.get("/:id", propertyParamValidator, async (c) => {
   const { id } = c.req.valid("param");
-  const property = await db.getPropertyById(id);
+  const supabase = c.get("supabase");
+  const property = await db.getPropertyById(supabase, id);
   if (!property) {
-    return c.json({ error: "Could not found a property" }, 404);
+    return c.json({ error: "Property not found" }, 404);
   }
   return c.json(property);
 });
@@ -58,7 +69,8 @@ properties.get("/:id", propertyParamValidator, async (c) => {
 properties.post("/", propertyValidator, async (c) => {
   try {
     const newProperty: NewProperty = c.req.valid("json");
-    const property = await db.createProperty(newProperty);
+    const supabase = c.get("supabase");
+    const property = await db.createProperty(supabase, newProperty);
     return c.json(property, 201);
   } catch (error) {
     console.error(error);
