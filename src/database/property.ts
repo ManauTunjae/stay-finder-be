@@ -5,10 +5,12 @@ import type {
   Property,
   PropertyListQuery,
 } from "../types/property.js";
+import type { BasicSupabaseClient } from "../types/supabase.js";
 
 export async function getProperties(
+  supabase: BasicSupabaseClient,
   query: PropertyListQuery,
-): Promise<PaginatedListResponse<Property>> {
+): Promise<PaginatedListResponse<Property>> { 
   const startIndex = query.offset;
   const endIndex = query.offset + query.limit - 1;
 
