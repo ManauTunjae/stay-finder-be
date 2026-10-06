@@ -95,38 +95,63 @@ properties.put(
   propertyParamValidator,
   propertyValidator,
   async (c) => {
+    try {
+      const supabase = c.get("supabase");
+      const { id } = c.req.valid("param");
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const body: NewProperty = c.req.valid("json");
+      const updateProperty = await db.updateProperty(
+        supabase,
+        id,
+        user.id,
+        body,
+      );
+
+      if (!updateProperty) {
+        return c.json({ error: "Property not found" }, 404);
+      }
+      return c.json(updateProperty);
+    } catch (error) {
+      console.error(error);
+      return c.json(
+        {
+          error: "Could not update new property",
+        },
+        500,
+      );
+    }
+  },
+);
+
+properties.delete("/:id", requireAuth, propertyParamValidator, async (c) => {
+  try {
     const supabase = c.get("supabase");
     const { id } = c.req.valid("param");
     const user = c.get("user");
     if (!user) {
       return c.json({ error: "Unauthorized" }, 401);
     }
-
-    const body: NewProperty = c.req.valid("json");
-    const updateProperty = await db.updateProperty(supabase, id, user.id, body);
-
-    if (!updateProperty) {
+    const deleteProperty = await db.deleteProperty(supabase, id, user.id);
+    if (!deleteProperty) {
       return c.json({ error: "Property not found" }, 404);
     }
-    return c.json(updateProperty);
-  },
-);
-
-properties.delete("/:id", requireAuth, propertyParamValidator, async (c) => {
-  const supabase = c.get("supabase");
-  const { id } = c.req.valid("param");
-  const user = c.get("user");
-  if(!user) {
-    return c.json({error: "Unauthorized"}, 401)
+    return c.json({
+      message: `Property: ${deleteProperty.title} is deleted`,
+      property: deleteProperty,
+    });
+  } catch (error) {
+    console.error(error);
+    return c.json(
+      {
+        error: "Could not delete new property",
+      },
+      500,
+    );
   }
-  const deleteProperty = await db.deleteProperty(supabase, id, user.id);
-  if (!deleteProperty) {
-    return c.json({ error: "Property not found" }, 404);
-  }
-  return c.json({
-    message: `Property: ${deleteProperty.title} is deleted`,
-    property: deleteProperty,
-  });
 });
 
 export default properties;
