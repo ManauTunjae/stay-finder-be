@@ -21,6 +21,7 @@ auth.post("/register", authValidator, async (c) => {
         201,
       );
     }
+    throw error;
   } catch (error: any) {
     console.warn("Error in registering", error);
     return c.json(
