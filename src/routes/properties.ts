@@ -99,14 +99,14 @@ properties.put(
     const { id } = c.req.valid("param");
     const user = c.get("user");
     if (!user) {
-      return c.json({ error: "Unathorized" }, 401);
+      return c.json({ error: "Unauthorized" }, 401);
     }
 
     const body: NewProperty = c.req.valid("json");
     const updateProperty = await db.updateProperty(supabase, id, user.id, body);
 
     if (!updateProperty) {
-      return c.json({ error: "Property not found " }, 404);
+      return c.json({ error: "Property not found" }, 404);
     }
     return c.json(updateProperty);
   },
