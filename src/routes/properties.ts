@@ -5,6 +5,7 @@ import { propertyValidator } from "../validators/propertyValidators.js";
 import propertyParamValidator from "../validators/propertyParamValidator.js";
 import propertyQueryValidator from "../validators/propertyQueryValidator.js";
 import propertyKindParamValidator from "../validators/propertyKindParamValidator.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const properties = new Hono({ strict: false });
 
@@ -66,11 +67,16 @@ properties.get("/:id", propertyParamValidator, async (c) => {
   return c.json(property);
 });
 
-properties.post("/", propertyValidator, async (c) => {
+properties.post("/", requireAuth, propertyValidator, async (c) => {
   try {
-    const newProperty: NewProperty = c.req.valid("json");
     const supabase = c.get("supabase");
-    const property = await db.createProperty(supabase, newProperty);
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const newProperty: NewProperty = c.req.valid("json");
+    const property = await db.createProperty(supabase, newProperty, user.id);
     return c.json(property, 201);
   } catch (error) {
     console.error(error);
