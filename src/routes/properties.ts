@@ -28,6 +28,34 @@ properties.get("/", propertyQueryValidator, async (c) => {
   }
 });
 
+properties.get(
+  "/my-properties",
+  requireAuth,
+  propertyQueryValidator,
+  async (c) => {
+    const supabase = c.get("supabase");
+    const query = c.req.valid("query");
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+    try {
+      const myProperties = await db.getProperties(supabase, {...query, host_id: user.id});
+      return c.json(myProperties);
+    } catch (error) {
+      return c.json(
+        {
+          data: [],
+          count: 0,
+          offset: query.offset,
+          limit: query.limit,
+        },
+        500,
+      );
+    }
+  },
+);
+
 // GET: properties either properties/kind/villa/ | properties/kind/appartment/
 properties.get(
   "/kind/:kind",
