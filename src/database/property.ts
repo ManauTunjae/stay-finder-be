@@ -47,6 +47,10 @@ export async function getProperties(
     supabaseQuery = supabaseQuery.eq("kind", query.kind);
   }
 
+  if (query.host_id) {
+    supabaseQuery = supabaseQuery.eq("host_id", query.host_id);
+  }
+
   const { data, error, count } = await supabaseQuery
     .order(query.sort_by, { ascending })
     .range(startIndex, endIndex);
@@ -87,7 +91,7 @@ export async function createProperty(
 ): Promise<Property> {
   const { data, error } = await supabase
     .from("properties")
-    .insert({...property, host_id: hostId})
+    .insert({ ...property, host_id: hostId })
     .select()
     .single();
 
@@ -124,7 +128,7 @@ export async function updateProperty(
 export async function deleteProperty(
   supabase: BasicSupabaseClient,
   id: string,
-  hostId: string,  
+  hostId: string,
 ): Promise<Property | null> {
   const { data, error } = await supabase
     .from("properties")

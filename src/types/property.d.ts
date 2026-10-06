@@ -19,6 +19,7 @@ export type PropertyListQuery = {
   sort_by: PropertySortBy;
   sort_order: SortOrder;
   kind?: PropertyKind;
+  host_id?: string;
 };
 
 
