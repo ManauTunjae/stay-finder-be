@@ -5,7 +5,7 @@ import * as dbProperty from "../database/property.js";
 import { bookingValidator } from "../validators/bookingValidator.js";
 import bookingParamValidator from "../validators/bookingParamValidator.js";
 import { requireAuth } from "../middleware/auth.js";
-import { calculateNights } from "../utils/date.js";
+import { calculateNights, getTodayDate } from "../utils/date.js";
 import { property } from "zod";
 
 const bookings = new Hono({ strict: false });
@@ -60,6 +60,10 @@ bookings.post("/", requireAuth, bookingValidator, async (c) => {
         },
         400,
       );
+    }
+
+    if (newBooking.check_in < getTodayDate()) {
+      return c.json({ error: "Check-in date cannot be in the past" }, 400);
     }
 
     const nights = calculateNights(newBooking.check_in, newBooking.check_out);
