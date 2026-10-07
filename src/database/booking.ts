@@ -33,7 +33,7 @@ export async function getBookingById(
 
 export async function createBooking(
   supabase: BasicSupabaseClient,
-  booking: NewBooking,
+  booking: NewBooking & { total_price: number },
   guestId: string,
 ): Promise<Booking> {
   const { data, error } = await supabase
@@ -50,4 +50,15 @@ export async function createBooking(
     throw new Error("Booking could not be created");
   }
   return data;
+}
+
+export function calculateNights(checkIn: string, checkOut: string): number{
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+  /* slut minus start, i millisekunder */
+  const diffInMs = end.getTime() - start.getTime();
+  /* millisekunder på ett dygn */
+  const msPerDay = 1000 * 60 * 60 * 24;
+
+  return Math.round(diffInMs / msPerDay);
 }
