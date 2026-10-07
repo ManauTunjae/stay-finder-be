@@ -33,7 +33,7 @@ export async function getBookingById(
 
 export async function createBooking(
   supabase: BasicSupabaseClient,
-  booking: NewBooking,
+  booking: NewBooking & { total_price: number },
   guestId: string,
 ): Promise<Booking> {
   const { data, error } = await supabase
