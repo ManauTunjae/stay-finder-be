@@ -5,6 +5,8 @@ import * as dbProperty from "../database/property.js";
 import { bookingValidator } from "../validators/bookingValidator.js";
 import bookingParamValidator from "../validators/bookingParamValidator.js";
 import { requireAuth } from "../middleware/auth.js";
+import { calculateNights } from "../database/booking.js";
+import { property } from "zod";
 
 const bookings = new Hono({ strict: false });
 
@@ -46,11 +48,11 @@ bookings.post("/", requireAuth, bookingValidator, async (c) => {
       supabase,
       newBooking.property_id
     );
-
+    
     if (!property) {
       return c.json({ error: "Property not found" }, 404);
     }
-
+    
     if (newBooking.guests > property.max_guests) {
       return c.json(
         {
@@ -59,8 +61,10 @@ bookings.post("/", requireAuth, bookingValidator, async (c) => {
         400,
       );
     }
-
-    const booking = await db.createBooking(supabase, {...newBooking, status: "pending"}, user.id);
+    
+    const nights = calculateNights(newBooking.check_in, newBooking.check_out);
+    const totalPrice = nights * property.price_per_night;
+    const booking = await db.createBooking(supabase, {...newBooking, status: "pending", total_price: totalPrice}, user.id);
     return c.json(booking, 201);
   } catch (error) {
     console.error(error);
