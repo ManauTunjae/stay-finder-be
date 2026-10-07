@@ -12,6 +12,7 @@ export interface NewBooking {
 
 export interface Booking extends NewBooking {
   booking_id: string;
+  guest_id: string;
   status: BookingStatus;
   created_at: string;
 }

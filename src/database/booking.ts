@@ -1,7 +1,9 @@
-import { supabase } from "../lib/supabase.js";
 import type { NewBooking, Booking } from "../types/booking.js";
+import type { BasicSupabaseClient } from "../types/supabase.js";
 
-export async function getBookings(): Promise<Booking[]> {
+export async function getBookings(
+  supabase: BasicSupabaseClient,
+): Promise<Booking[]> {
   const { data, error } = await supabase
     .from("bookings")
     .select("*")
@@ -13,7 +15,10 @@ export async function getBookings(): Promise<Booking[]> {
   return data ?? [];
 }
 
-export async function getBookingById(id: string): Promise<Booking | null> {
+export async function getBookingById(
+  supabase: BasicSupabaseClient,
+  id: string,
+): Promise<Booking | null> {
   const { data, error } = await supabase
     .from("bookings")
     .select("*")
@@ -26,10 +31,14 @@ export async function getBookingById(id: string): Promise<Booking | null> {
   return data;
 }
 
-export async function createBooking(booking: NewBooking): Promise<Booking> {
+export async function createBooking(
+  supabase: BasicSupabaseClient,
+  booking: NewBooking,
+  guestId: string,
+): Promise<Booking> {
   const { data, error } = await supabase
     .from("bookings")
-    .insert(booking)
+    .insert({ ...booking, guest_id: guestId })
     .select()
     .single();
 
@@ -38,7 +47,7 @@ export async function createBooking(booking: NewBooking): Promise<Booking> {
   }
 
   if (!data) {
-    throw new Error("Booking could not created");
+    throw new Error("Booking could not be created");
   }
   return data;
 }
