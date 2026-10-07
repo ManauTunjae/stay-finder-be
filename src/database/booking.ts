@@ -1,7 +1,10 @@
 import { supabase } from "../lib/supabase.js";
 import type { NewBooking, Booking } from "../types/booking.js";
+import type { BasicSupabaseClient } from "../types/supabase.js";
 
-export async function getBookings(): Promise<Booking[]> {
+export async function getBookings(
+  supabase: BasicSupabaseClient,
+): Promise<Booking[]> {
   const { data, error } = await supabase
     .from("bookings")
     .select("*")
