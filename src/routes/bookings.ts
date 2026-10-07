@@ -34,13 +34,23 @@ bookings.get("/:id", requireAuth, bookingParamValidator, async (c) => {
   }
 });
 
-bookings.post("/", bookingValidator, async (c) => {
+bookings.post("/", requireAuth, bookingValidator, async (c) => {
+  const supabase = c.get("supabase");
+  const newBooking: NewBooking = c.req.valid("json");
+  const user = c.get("user");
+  if (!user) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
   try {
-    const newBooking: NewBooking = c.req.valid("json");
-    const property = await dbProperty.getPropertyById(newBooking.property_id);
+    const property = await dbProperty.getPropertyById(
+      supabase,
+      newBooking.property_id
+    );
+
     if (!property) {
       return c.json({ error: "Property not found" }, 404);
     }
+
     if (newBooking.guests > property.max_guests) {
       return c.json(
         {
@@ -49,8 +59,9 @@ bookings.post("/", bookingValidator, async (c) => {
         400,
       );
     }
-    const booking = await db.createBooking(newBooking);
-    return c.json(db.createBooking, 201);
+
+    const booking = await db.createBooking(supabase, {...newBooking, status: "pending"}, user.id);
+    return c.json(booking, 201);
   } catch (error) {
     console.error(error);
     return c.json(
