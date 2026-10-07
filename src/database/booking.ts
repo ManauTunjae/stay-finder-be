@@ -51,3 +51,14 @@ export async function createBooking(
   }
   return data;
 }
+
+export function calculateNights(checkIn: string, checkOut: string): number{
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+  /* slut minus start, i millisekunder */
+  const diffInMs = end.getTime() - start.getTime();
+  /* millisekunder på ett dygn */
+  const msPerDay = 1000 * 60 * 60 * 24;
+
+  return Math.round(diffInMs / msPerDay);
+}
