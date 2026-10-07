@@ -4,12 +4,19 @@ import * as db from "../database/booking.js";
 import * as dbProperty from "../database/property.js";
 import { bookingValidator } from "../validators/bookingValidator.js";
 import bookingParamValidator from "../validators/bookingParamValidator.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const bookings = new Hono({ strict: false });
 
-bookings.get("/", async (c) => {
-  const allBookings = await db.getBookings();
-  return c.json(allBookings);
+bookings.get("/", requireAuth, async (c) => {
+  const supabase = c.get("supabase");
+  try {
+    const allBookings = await db.getBookings(supabase);
+    return c.json(allBookings);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: "Could not fetch bookings" }, 500);
+  }
 });
 
 bookings.get("/:id", bookingParamValidator, async (c) => {
@@ -29,7 +36,12 @@ bookings.post("/", bookingValidator, async (c) => {
       return c.json({ error: "Property not found" }, 404);
     }
     if (newBooking.guests > property.max_guests) {
-      return c.json({ error: `This property allows a maximum of ${property.max_guests} guests` }, 400);
+      return c.json(
+        {
+          error: `This property allows a maximum of ${property.max_guests} guests`,
+        },
+        400,
+      );
     }
     const booking = await db.createBooking(newBooking);
     return c.json(db.createBooking, 201);
