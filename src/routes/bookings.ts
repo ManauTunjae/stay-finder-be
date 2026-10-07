@@ -19,13 +19,19 @@ bookings.get("/", requireAuth, async (c) => {
   }
 });
 
-bookings.get("/:id", bookingParamValidator, async (c) => {
+bookings.get("/:id", requireAuth, bookingParamValidator, async (c) => {
   const { id } = c.req.valid("param");
-  const booking = await db.getBookingById(id);
-  if (!booking) {
-    return c.json({ error: "Booking not found" }, 404);
+  const supabase = c.get("supabase");
+  try {
+    const booking = await db.getBookingById(supabase, id);
+    if (!booking) {
+      return c.json({ error: "Booking not found" }, 404);
+    }
+    return c.json(booking);
+  } catch (error) {
+    console.error(error);
+    return c.json({ error: "Could not fetch booking" }, 500);
   }
-  return c.json(booking);
 });
 
 bookings.post("/", bookingValidator, async (c) => {
