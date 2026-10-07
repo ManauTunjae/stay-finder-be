@@ -1,4 +1,3 @@
-import { supabase } from "../lib/supabase.js";
 import type { NewBooking, Booking } from "../types/booking.js";
 import type { BasicSupabaseClient } from "../types/supabase.js";
 
