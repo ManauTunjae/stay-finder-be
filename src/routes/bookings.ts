@@ -85,29 +85,44 @@ bookings.post("/", requireAuth, bookingValidator, async (c) => {
   }
 });
 
-// bookings.patch("/:id", bookingOptionalValidator, async (c) => {
-//   const allBookings = await getBookings();
-//   const bookingId = c.req.param("id");
+// uppdatera bokning status / avboka Kanske POST
+bookings.patch("/:id/cancel", requireAuth, bookingParamValidator, async (c) => {
+  const supabase = c.get("supabase");
+  const { id } = c.req.valid("param");
+  try {
+    const booking = await db.getBookingById(supabase, id);
+    if (!booking) {
+      return c.json({ error: "Booking not found" }, 404);
+    }
 
-//   const bookingIndex = allBookings.findIndex((b) => b.booking_id === bookingId);
+    if (booking.check_in < getTodayDate()) {
+      return c.json(
+        {
+          error: `Cannot cancel booking: check-in date ${booking.check_in} has already passed`,
+        },
+        409,
+      );
+    }
 
-//   if (bookingIndex === -1) {
-//     return c.json({ error: "Booking not found" }, 404);
-//   }
-//   const bookingBody: Partial<Booking> = c.req.valid("json");
-
-//   allBookings[bookingIndex] = {
-//     ...allBookings[bookingIndex],
-//     ...bookingBody,
-//     booking_id: allBookings[bookingIndex].booking_id,
-//   };
-//   try {
-//     await saveBookings(allBookings);
-//   } catch (error) {
-//     return c.json({ error: "Could not update booking" }, 500);
-//   }
-//   return c.json(allBookings[bookingIndex]);
-// });
+    if (booking.status === "cancelled") {
+      return c.json({ error: "This booking is already cancelled." }, 409);
+    }
+    const cancelledBooking = await db.updateBookingStatus(
+      supabase,
+      id,
+      "cancelled",
+    );
+    return c.json(cancelledBooking);
+  } catch (error) {
+    console.error(error);
+    return c.json(
+      {
+        error: "Could not cancel a booking",
+      },
+      500,
+    );
+  }
+});
 
 // bookings.delete("/:id", async (c) => {
 //   const allbookings = await getBookings();
