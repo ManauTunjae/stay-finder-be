@@ -197,7 +197,7 @@ bookings.patch(
 );
 
 bookings.patch(
-  "/:id",
+  "/:id/guests",
   requireAuth,
   bookingParamValidator,
   bookingGuestsValidator,
