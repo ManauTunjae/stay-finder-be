@@ -12,7 +12,7 @@ const bookingBaseSchema = z.object({
   status: z.enum(["pending", "confirmed", "cancelled"]).default("pending"),
 });
 
-const bookingCreateDateSchema = bookingBaseSchema.refine(
+const bookingCreateDatesSchema = bookingBaseSchema.refine(
   (data) => data.check_out > data.check_in,
   {
     error: "Check-out must be after check-in",
@@ -36,7 +36,7 @@ const bookingChangeDatesSchema = bookingBaseSchema
 
 export const bookingValidator = zValidator(
   "json",
-  bookingCreateDateSchema,
+  bookingCreateDatesSchema,
   (result, c) => {
     if (!result.success) {
       return c.json(getValidatorError(result.error), 400);
