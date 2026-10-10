@@ -342,6 +342,23 @@ bookings.patch(
         return c.json({ error: "Property not found" }, 404);
       }
 
+      const isOverlapping = await db.hasOverlappingBooking(
+        supabase,
+        property.property_id,
+        check_in,
+        check_out,
+        booking.booking_id,
+      );
+
+      if (isOverlapping) {
+        return c.json(
+          {
+            error: `This property is already booked between ${check_in} and ${check_out}`,
+          },
+          409,
+        );
+      }
+
       const nights = calculateNights(check_in, check_out);
       const totalPrice = nights * property.price_per_night;
       const updatedBooking = await db.updateBooking(supabase, id, {
