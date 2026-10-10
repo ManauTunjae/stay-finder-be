@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { getValidatorError } from "../utils/validation.js";
 
 const bookingBaseSchema = z.object({
   property_id: z.uuid("Property id must be a valid UUID"),
@@ -19,19 +20,26 @@ const bookingDateSchema = bookingBaseSchema.refine(
   },
 );
 
+const bookingGuestsSchema = bookingBaseSchema.pick({
+  guests: true,
+});
+
 export const bookingValidator = zValidator(
   "json",
   bookingDateSchema,
   (result, c) => {
     if (!result.success) {
-      return c.json(
-        {
-          error: result.error.issues.map((issue) => {
-            return [issue.path.join(", "), issue.message];
-          }),
-        },
-        400,
-      );
+      return c.json(getValidatorError(result.error), 400);
+    }
+  },
+);
+
+export const bookingGuestsValidator = zValidator(
+  "json",
+  bookingGuestsSchema,
+  (result, c) => {
+    if (!result.success) {
+      return c.json(getValidatorError(result.error), 400);
     }
   },
 );
