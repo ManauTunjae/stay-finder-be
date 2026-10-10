@@ -1,4 +1,9 @@
-import type { NewBooking, Booking, BookingStatus } from "../types/booking.js";
+import type {
+  NewBooking,
+  Booking,
+  BookingStatus,
+  BookingChanges,
+} from "../types/booking.js";
 import type { BasicSupabaseClient } from "../types/supabase.js";
 
 export async function getBookings(
@@ -60,6 +65,24 @@ export async function updateBookingStatus(
   const { data, error } = await supabase
     .from("bookings")
     .update({ status: status })
+    .eq("booking_id", id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function updateBooking(
+  supabase: BasicSupabaseClient,
+  id: string,
+  changes: BookingChanges,
+): Promise<Booking | null> {
+  const { data, error } = await supabase
+    .from("bookings")
+    .update(changes)
     .eq("booking_id", id)
     .select()
     .maybeSingle();
