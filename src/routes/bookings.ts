@@ -3,6 +3,7 @@ import type { NewBooking } from "../types/booking.js";
 import * as db from "../database/booking.js";
 import * as dbProperty from "../database/property.js";
 import {
+  bookingChangeDateValidator,
   bookingGuestsValidator,
   bookingValidator,
 } from "../validators/bookingValidator.js";
@@ -197,7 +198,7 @@ bookings.patch(
 );
 
 bookings.patch(
-  "/:id",
+  "/:id/guests",
   requireAuth,
   bookingParamValidator,
   bookingGuestsValidator,
@@ -260,6 +261,83 @@ bookings.patch(
       return c.json(
         {
           error: "Could not update a booking",
+        },
+        500,
+      );
+    }
+  },
+);
+
+bookings.patch(
+  "/:id/dates",
+  requireAuth,
+  bookingParamValidator,
+  bookingChangeDateValidator,
+  async (c) => {
+    const supabase = c.get("supabase");
+    const { id } = c.req.valid("param");
+    const user = c.get("user");
+    const { check_in, check_out } = c.req.valid("json");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+    try {
+      const booking = await db.getBookingById(supabase, id);
+      if (!booking) {
+        return c.json({ error: "Booking not found" }, 404);
+      }
+
+      if (booking.guest_id !== user.id) {
+        return c.json(
+          { error: "Only the booking owner can change this booking dates" },
+          403,
+        );
+      }
+
+      if (booking.status !== "pending") {
+        return c.json({ error: "Only pending bookings can be changed" }, 409);
+      }
+
+      if (booking.check_in < getTodayDate()) {
+        return c.json(
+          {
+            error: `Cannot change booking: check-in date ${booking.check_in} has already passed`,
+          },
+          409,
+        );
+      }
+
+      if (check_in < getTodayDate()) {
+        return c.json(
+          {
+            error: `New check-in date ${check_in} cannot be in the past`,
+          },
+          400,
+        );
+      }
+
+      const property = await dbProperty.getPropertyById(
+        supabase,
+        booking.property_id,
+      );
+
+      if (!property) {
+        return c.json({ error: "Property not found" }, 404);
+      }
+
+      const nights = calculateNights(check_in, check_out);
+      const totalPrice = nights * property.price_per_night;
+      const updatedBooking = await db.updateBooking(supabase, id, {
+        check_in,
+        check_out,
+        total_price: totalPrice,
+      });
+      return c.json(updatedBooking);
+    } catch (error) {
+      console.error(error);
+      return c.json(
+        {
+          error: "Could not change a booking dates",
         },
         500,
       );
