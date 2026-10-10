@@ -58,7 +58,7 @@ auth.post("/login", authValidator, async (c) => {
   }
 });
 
-auth.get("/me", async (c) => {
+auth.get("/me", (c) => {
   const user = c.get("user");
   const me = user ? { id: user.id, email: user.email } : null;
 
