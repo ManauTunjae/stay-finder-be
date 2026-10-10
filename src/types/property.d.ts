@@ -1,4 +1,4 @@
-export type PropertyKind =  "apartment" | "villa";
+export type PropertyKind = "apartment" | "villa";
 
 export type PropertySortBy =
   | "title"
@@ -22,8 +22,9 @@ export type PropertyListQuery = {
   sort_order: SortOrder;
   kind?: PropertyKind;
   host_id?: string;
+  check_in?: string;
+  check_out?: string;
 };
-
 
 export interface NewProperty {
   title: string;

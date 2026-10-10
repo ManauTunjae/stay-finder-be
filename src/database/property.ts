@@ -55,6 +55,22 @@ export async function getProperties(
     supabaseQuery = supabaseQuery.eq("host_id", query.host_id);
   }
 
+  if (query.check_in && query.check_out) {
+    const unavailableIds = await getUnavailablePropertyIds(
+      supabase,
+      query.check_in,
+      query.check_out,
+    );
+
+    if (unavailableIds.length > 0) {
+      supabaseQuery = supabaseQuery.not(
+        "property_id",
+        "in",
+        `(${unavailableIds.join(",")})`,
+      );
+    }
+  }
+
   const { data, error, count } = await supabaseQuery
     .order(query.sort_by, { ascending })
     .range(startIndex, endIndex);
@@ -146,4 +162,19 @@ export async function deleteProperty(
     throw new Error(error.message);
   }
   return data;
+}
+
+export async function getUnavailablePropertyIds(
+  supabase: BasicSupabaseClient,
+  checkIn: string,
+  checkOut: string,
+): Promise<string[]> {
+  const { data, error } = await supabase.rpc("get_unavailable_property_ids", {
+    p_check_in: checkIn,
+    p_check_out: checkOut,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+  return (data ?? []).map((row: { property_id: string }) => row.property_id);
 }
