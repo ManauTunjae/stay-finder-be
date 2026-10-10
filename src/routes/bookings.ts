@@ -85,7 +85,7 @@ bookings.post("/", requireAuth, bookingValidator, async (c) => {
   }
 });
 
-// uppdatera bokning status / avboka Kanske POST
+// uppdatera bokning status to cancelled
 bookings.patch("/:id/cancel", requireAuth, bookingParamValidator, async (c) => {
   const supabase = c.get("supabase");
   const { id } = c.req.valid("param");
@@ -123,6 +123,75 @@ bookings.patch("/:id/cancel", requireAuth, bookingParamValidator, async (c) => {
     );
   }
 });
+
+// update booking status to confirm
+bookings.patch(
+  "/:id/confirm",
+  requireAuth,
+  bookingParamValidator,
+  async (c) => {
+    const supabase = c.get("supabase");
+    const { id } = c.req.valid("param");
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+    try {
+      const booking = await db.getBookingById(supabase, id);
+      if (!booking) {
+        return c.json({ error: "Booking not found" }, 404);
+      }
+
+      const property = await dbProperty.getPropertyById(
+        supabase,
+        booking.property_id,
+      );
+      if (!property) {
+        return c.json({ error: "Property not found" }, 404);
+      }
+
+      if (property.host_id !== user.id) {
+        return c.json(
+          { error: "Only the property owner can confirm this booking" },
+          403,
+        );
+      }
+
+      if (booking.check_in < getTodayDate()) {
+        return c.json(
+          {
+            error: `Cannot confirm booking: check-in date ${booking.check_in} has already passed`,
+          },
+          409,
+        );
+      }
+
+      if (booking.status !== "pending") {
+        return c.json(
+          {
+            error: "Only pending bookings can be confirmed",
+          },
+          409,
+        );
+      }
+
+      const confirmedBooking = await db.updateBookingStatus(
+        supabase,
+        id,
+        "confirmed",
+      );
+      return c.json(confirmedBooking);
+    } catch (error) {
+      console.error(error);
+      return c.json(
+        {
+          error: "Could not confirm a booking",
+        },
+        500,
+      );
+    }
+  },
+);
 
 // bookings.delete("/:id", async (c) => {
 //   const allbookings = await getBookings();
