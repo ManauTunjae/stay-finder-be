@@ -2,7 +2,10 @@ import { Hono } from "hono";
 import type { NewBooking } from "../types/booking.js";
 import * as db from "../database/booking.js";
 import * as dbProperty from "../database/property.js";
-import { bookingValidator } from "../validators/bookingValidator.js";
+import {
+  bookingGuestsValidator,
+  bookingValidator,
+} from "../validators/bookingValidator.js";
 import bookingParamValidator from "../validators/bookingParamValidator.js";
 import { requireAuth } from "../middleware/auth.js";
 import { calculateNights, getTodayDate } from "../utils/date.js";
@@ -124,7 +127,7 @@ bookings.patch("/:id/cancel", requireAuth, bookingParamValidator, async (c) => {
   }
 });
 
-// update booking status to confirm
+// update booking status to confirm by owner
 bookings.patch(
   "/:id/confirm",
   requireAuth,
@@ -186,6 +189,77 @@ bookings.patch(
       return c.json(
         {
           error: "Could not confirm a booking",
+        },
+        500,
+      );
+    }
+  },
+);
+
+bookings.patch(
+  "/:id",
+  requireAuth,
+  bookingParamValidator,
+  bookingGuestsValidator,
+  async (c) => {
+    const supabase = c.get("supabase");
+    const { id } = c.req.valid("param");
+    const user = c.get("user");
+    const { guests } = c.req.valid("json");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+    try {
+      const booking = await db.getBookingById(supabase, id);
+      if (!booking) {
+        return c.json({ error: "Booking not found" }, 404);
+      }
+
+      if (booking.guest_id !== user.id) {
+        return c.json(
+          { error: "Only the booking owner can change this booking" },
+          403,
+        );
+      }
+
+      if (booking.status !== "pending") {
+        return c.json({ error: "Only pending bookings can be changed" }, 409);
+      }
+
+      if (booking.check_in < getTodayDate()) {
+        return c.json(
+          {
+            error: `Cannot change booking: check-in date ${booking.check_in} has already passed`,
+          },
+          409,
+        );
+      }
+
+      const property = await dbProperty.getPropertyById(
+        supabase,
+        booking.property_id,
+      );
+
+      if (!property) {
+        return c.json({ error: "Property not found" }, 404);
+      }
+
+      if (guests > property.max_guests) {
+        return c.json(
+          {
+            error: `This property allows a maximum of ${property.max_guests} guests`,
+          },
+          400,
+        );
+      }
+
+      const updatedBooking = await db.updateBooking(supabase, id, { guests });
+      return c.json(updatedBooking);
+    } catch (error) {
+      console.error(error);
+      return c.json(
+        {
+          error: "Could not update a booking",
         },
         500,
       );

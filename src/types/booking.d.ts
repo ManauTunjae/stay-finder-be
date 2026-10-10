@@ -17,3 +17,7 @@ export interface Booking extends NewBooking {
   status: BookingStatus;
   created_at: string;
 }
+
+export type BookingChanges = Partial<
+  Pick<Booking, "guests" | "check_in" | "check_out" | "total_price">
+>;
