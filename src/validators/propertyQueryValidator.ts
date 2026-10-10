@@ -5,6 +5,7 @@ const propertyQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(10),
   offset: z.coerce.number().int().min(0).default(0),
   city: z.string().min(1).optional(),
+  country: z.string().min(1).optional(),
   max_guests: z.coerce.number().int().min(1).optional(),
   min_price: z.coerce.number().int().min(0).optional(),
   max_price: z.coerce.number().int().min(0).optional(),
@@ -18,7 +19,7 @@ const propertyQuerySchema = z.object({
   sort_by: z
     .enum(["title", "city", "price_per_night", "created_at"])
     .default("created_at"),
-  sort_order: z.enum(["asc", "desc"]).default("desc")
+  sort_order: z.enum(["asc", "desc"]).default("desc"),
 });
 
 const propertyQueryValidator = zValidator(
@@ -28,12 +29,12 @@ const propertyQueryValidator = zValidator(
     if (!result.success) {
       return c.json(
         {
-          errors: result.error.issues
+          errors: result.error.issues,
         },
-        400
+        400,
       );
     }
-  }
+  },
 );
 
 export default propertyQueryValidator;

@@ -3,6 +3,7 @@ export type PropertyKind =  "apartment" | "villa";
 export type PropertySortBy =
   | "title"
   | "city"
+  | "country"
   | "price_per_night"
   | "created_at";
 
@@ -12,6 +13,7 @@ export type PropertyListQuery = {
   limit: number;
   offset: number;
   city?: string;
+  country?: string;
   max_guests?: number;
   min_price?: number;
   max_price?: number;

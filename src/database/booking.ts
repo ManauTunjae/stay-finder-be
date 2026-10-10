@@ -1,4 +1,4 @@
-import type { NewBooking, Booking } from "../types/booking.js";
+import type { NewBooking, Booking, BookingStatus } from "../types/booking.js";
 import type { BasicSupabaseClient } from "../types/supabase.js";
 
 export async function getBookings(
@@ -52,13 +52,20 @@ export async function createBooking(
   return data;
 }
 
-export function calculateNights(checkIn: string, checkOut: string): number{
-  const checkInDate = new Date(checkIn);
-  const checkOutDate = new Date(checkOut);
-  /* slut minus start, i millisekunder */
-  const stayDurationInMs = checkOutDate.getTime() - checkInDate.getTime();
-  /* millisekunder på ett dygn */
-  const msPerDay = 1000 * 60 * 60 * 24;
+export async function updateBookingStatus(
+  supabase: BasicSupabaseClient,
+  id: string,
+  status: BookingStatus,
+): Promise<Booking | null> {
+  const { data, error } = await supabase
+    .from("bookings")
+    .update({ status: status })
+    .eq("booking_id", id)
+    .select()
+    .maybeSingle();
 
-  return Math.round(stayDurationInMs / msPerDay);
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
 }

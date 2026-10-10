@@ -23,6 +23,10 @@ export async function getProperties(
     supabaseQuery = supabaseQuery.eq("city", query.city);
   }
 
+  if (query.country) {
+    supabaseQuery = supabaseQuery.eq("country", query.country);
+  }
+
   if (query.max_guests) {
     supabaseQuery = supabaseQuery.gte("max_guests", query.max_guests);
   }
