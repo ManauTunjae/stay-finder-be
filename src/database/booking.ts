@@ -99,11 +99,13 @@ export async function hasOverlappingBooking(
   propertyId: string,
   checkIn: string,
   checkOut: string,
+  excludeBooking?: string,
 ): Promise<boolean> {
   const { data, error } = await supabase.rpc("has_overlapping_booking", {
     p_property_id: propertyId,
     p_check_in: checkIn,
     p_check_out: checkOut,
+    p_exclude_booking_id: excludeBooking,
   });
   if (error) {
     throw new Error(error.message);
