@@ -47,6 +47,11 @@ bookings.post("/", requireAuth, bookingValidator, async (c) => {
   if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
   }
+
+  if (newBooking.check_in < getTodayDate()) {
+    return c.json({ error: "Check-in date cannot be in the past" }, 400);
+  }
+
   try {
     const property = await dbProperty.getPropertyById(
       supabase,
@@ -66,8 +71,20 @@ bookings.post("/", requireAuth, bookingValidator, async (c) => {
       );
     }
 
-    if (newBooking.check_in < getTodayDate()) {
-      return c.json({ error: "Check-in date cannot be in the past" }, 400);
+    const isOverlapping = await db.hasOverlappingBooking(
+      supabase,
+      property.property_id,
+      newBooking.check_in,
+      newBooking.check_out,
+    );
+
+    if (isOverlapping) {
+      return c.json(
+        {
+          error: `This property is already booked between ${newBooking.check_in} and ${newBooking.check_out}`,
+        },
+        409,
+      );
     }
 
     const nights = calculateNights(newBooking.check_in, newBooking.check_out);
