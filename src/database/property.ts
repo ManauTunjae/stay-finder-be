@@ -1,0 +1,180 @@
+import type { PaginatedListResponse } from "../types/global.js";
+import type {
+  NewProperty,
+  Property,
+  PropertyListQuery,
+} from "../types/property.js";
+import type { BasicSupabaseClient } from "../types/supabase.js";
+
+export async function getProperties(
+  supabase: BasicSupabaseClient,
+  query: PropertyListQuery,
+): Promise<PaginatedListResponse<Property>> {
+  const startIndex = query.offset;
+  const endIndex = query.offset + query.limit - 1;
+
+  const ascending = query.sort_order === "asc";
+
+  let supabaseQuery = supabase
+    .from("properties")
+    .select("*", { count: "exact" });
+
+  if (query.city) {
+    supabaseQuery = supabaseQuery.eq("city", query.city);
+  }
+
+  if (query.country) {
+    supabaseQuery = supabaseQuery.eq("country", query.country);
+  }
+
+  if (query.max_guests) {
+    supabaseQuery = supabaseQuery.gte("max_guests", query.max_guests);
+  }
+
+  if (query.min_price !== undefined) {
+    supabaseQuery = supabaseQuery.gte("price_per_night", query.min_price);
+  }
+
+  if (query.max_price !== undefined) {
+    supabaseQuery = supabaseQuery.lte("price_per_night", query.max_price);
+  }
+
+  if (query.q) {
+    const searchPattern = `%${query.q}%`;
+
+    supabaseQuery = supabaseQuery.or(
+      `title.ilike.${searchPattern},description.ilike.${searchPattern},city.ilike.${searchPattern}`,
+    );
+  }
+
+  if (query.kind) {
+    supabaseQuery = supabaseQuery.eq("kind", query.kind);
+  }
+
+  if (query.host_id) {
+    supabaseQuery = supabaseQuery.eq("host_id", query.host_id);
+  }
+
+  if (query.check_in && query.check_out) {
+    const unavailableIds = await getUnavailablePropertyIds(
+      supabase,
+      query.check_in,
+      query.check_out,
+    );
+
+    if (unavailableIds.length > 0) {
+      supabaseQuery = supabaseQuery.not(
+        "property_id",
+        "in",
+        `(${unavailableIds.join(",")})`,
+      );
+    }
+  }
+
+  const { data, error, count } = await supabaseQuery
+    .order(query.sort_by, { ascending })
+    .range(startIndex, endIndex);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    data: data ?? [],
+    count: count ?? 0,
+    offset: query.offset,
+    limit: query.limit,
+  };
+}
+
+export async function getPropertyById(
+  supabase: BasicSupabaseClient,
+  id: string,
+): Promise<Property | null> {
+  const { data, error } = await supabase
+    .from("properties")
+    .select("*")
+    .eq("property_id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function createProperty(
+  supabase: BasicSupabaseClient,
+  property: NewProperty,
+  hostId: string,
+): Promise<Property> {
+  const { data, error } = await supabase
+    .from("properties")
+    .insert({ ...property, host_id: hostId })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Property could not be created");
+  }
+  return data;
+}
+
+export async function updateProperty(
+  supabase: BasicSupabaseClient,
+  id: string,
+  hostId: string,
+  property: NewProperty,
+): Promise<Property | null> {
+  const { data, error } = await supabase
+    .from("properties")
+    .update(property)
+    .eq("property_id", id)
+    .eq("host_id", hostId)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function deleteProperty(
+  supabase: BasicSupabaseClient,
+  id: string,
+  hostId: string,
+): Promise<Property | null> {
+  const { data, error } = await supabase
+    .from("properties")
+    .delete()
+    .eq("property_id", id)
+    .eq("host_id", hostId)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function getUnavailablePropertyIds(
+  supabase: BasicSupabaseClient,
+  checkIn: string,
+  checkOut: string,
+): Promise<string[]> {
+  const { data, error } = await supabase.rpc("get_unavailable_property_ids", {
+    p_check_in: checkIn,
+    p_check_out: checkOut,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+  return (data ?? []).map((row: { property_id: string }) => row.property_id);
+}
