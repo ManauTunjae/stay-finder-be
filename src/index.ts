@@ -19,12 +19,17 @@ app.get("/", (c) => {
 app.route("/properties", properties);
 app.route("/bookings", bookings);
 app.route("/auth", auth);
-serve(
-  {
-    fetch: app.fetch,
-    port: env.honoPort,
-  },
-  (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`);
-  },
-);
+
+if (process.env.VERCEL !== "1") {
+  serve(
+    {
+      fetch: app.fetch,
+      port: env.honoPort,
+    },
+    (info) => {
+      console.log(`Server is running on http://localhost:${info.port}`);
+    },
+  );
+}
+
+export default app;
