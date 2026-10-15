@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { env } from "./env.js";
 import properties from "./routes/properties.js";
 import bookings from "./routes/bookings.js";
@@ -9,6 +10,14 @@ import { optionalAuth } from "./middleware/auth.js";
 const app = new Hono({
   strict: false,
 });
+
+app.use(
+  "*",
+  cors({
+    origin: env.frontendUrl.split(","),
+    credentials: true,
+  }),
+);
 
 app.use("*", optionalAuth);
 
