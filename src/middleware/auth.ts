@@ -6,6 +6,8 @@ import { createServerClient } from "@supabase/ssr";
 import { env } from "../env.js";
 import type { BasicSupabaseClient } from "../types/supabase.js";
 
+const isProduction = env.nodeEnv === "production" || process.env.VERCEL === "1";
+
 function createSupabaseForRequest(c: Context) {
   return createServerClient(env.supabaseUrl, env.supabaseKey, {
     cookies: {
@@ -25,8 +27,8 @@ function createSupabaseForRequest(c: Context) {
             expires: options.expires,
             maxAge: options.maxAge,
             httpOnly: true,
-            secure: env.nodeEnv === "production",
-            sameSite: "lax",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             path: "/",
           });
         });
