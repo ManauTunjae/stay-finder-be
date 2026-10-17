@@ -62,6 +62,10 @@ bookings.post("/", requireAuth, bookingValidator, async (c) => {
       return c.json({ error: "Property not found" }, 404);
     }
 
+    if (property.host_id === user.id) {
+      return c.json({ error: "You cannot book your own property" }, 403);
+    }
+
     if (newBooking.guests > property.max_guests) {
       return c.json(
         {
