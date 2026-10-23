@@ -11,7 +11,7 @@ export async function getBookings(
 ): Promise<Booking[]> {
   const { data, error } = await supabase
     .from("bookings")
-    .select("*, properties(title, city)")
+    .select("*, properties(title, city, image_url)")
     .order("created_at", { ascending: false });
 
   if (error) {
